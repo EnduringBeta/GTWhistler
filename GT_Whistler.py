@@ -32,7 +32,7 @@ class Whistler:
     classEndMinute = 55
 
     def setup(self):
-        # TODO: Change this back to config.json when committing
+        # Custom file for authentication data not to be shared publicly.
         configFile = "myConfig.json"
 
         try:
