@@ -1,37 +1,8 @@
 {
-	"_comment":		"This file holds the schedule for the whistle to sound. The first index is Monday. All times are 24-hour format.",
+    "_comment":     "This file holds the schedule for the whistle to sound. The first index is Monday. All times are 24-hour format.",
     "regularSchedule": [
-    	[
-    		{"hour":  7, "minute": 55},
-    		{"hour":  8, "minute": 55},
-    		{"hour":  9, "minute": 55},
-    		{"hour": 10, "minute": 55},
-    		{"hour": 11, "minute": 55},
-    		{"hour": 12, "minute": 55},
-    		{"hour": 13, "minute": 55},
-    		{"hour": 14, "minute": 55},
-    		{"hour": 15, "minute": 55},
-    		{"hour": 16, "minute": 55},
-    		{"hour": 17, "minute": 55}
-    	],
-    	[
-    		{"hour":  7, "minute": 55},
-    		{"hour":  8, "minute": 55},
-    		{"hour":  9, "minute": 25},
-    		{"hour":  9, "minute": 55},
-    		{"hour": 10, "minute": 55},
-    		{"hour": 11, "minute": 55},
-    		{"hour": 12, "minute": 55},
-    		{"hour": 13, "minute": 25},
-    		{"hour": 13, "minute": 55},
-    		{"hour": 14, "minute": 55},
-    		{"hour": 15, "minute": 55},
-    		{"hour": 16, "minute": 25},
-    		{"hour": 16, "minute": 55},
-    		{"hour": 17, "minute": 55}
-    	],
-    	[
-    		{"hour":  7, "minute": 55},
+        [
+            {"hour":  7, "minute": 55},
             {"hour":  8, "minute": 55},
             {"hour":  9, "minute": 55},
             {"hour": 10, "minute": 55},
@@ -42,9 +13,9 @@
             {"hour": 15, "minute": 55},
             {"hour": 16, "minute": 55},
             {"hour": 17, "minute": 55}
-    	],
-    	[
-    		{"hour":  7, "minute": 55},
+        ],
+        [
+            {"hour":  7, "minute": 55},
             {"hour":  8, "minute": 55},
             {"hour":  9, "minute": 25},
             {"hour":  9, "minute": 55},
@@ -58,9 +29,9 @@
             {"hour": 16, "minute": 25},
             {"hour": 16, "minute": 55},
             {"hour": 17, "minute": 55}
-    	],
-    	[
-    		{"hour":  7, "minute": 55},
+        ],
+        [
+            {"hour":  7, "minute": 55},
             {"hour":  8, "minute": 55},
             {"hour":  9, "minute": 55},
             {"hour": 10, "minute": 55},
@@ -71,13 +42,42 @@
             {"hour": 15, "minute": 55},
             {"hour": 16, "minute": 55},
             {"hour": 17, "minute": 55}
-    	],
-    	[
-    		{"hour": 12, "minute":  0},
-    	],
-    	[
-    		
-    	]
+        ],
+        [
+            {"hour":  7, "minute": 55},
+            {"hour":  8, "minute": 55},
+            {"hour":  9, "minute": 25},
+            {"hour":  9, "minute": 55},
+            {"hour": 10, "minute": 55},
+            {"hour": 11, "minute": 55},
+            {"hour": 12, "minute": 55},
+            {"hour": 13, "minute": 25},
+            {"hour": 13, "minute": 55},
+            {"hour": 14, "minute": 55},
+            {"hour": 15, "minute": 55},
+            {"hour": 16, "minute": 25},
+            {"hour": 16, "minute": 55},
+            {"hour": 17, "minute": 55}
+        ],
+        [
+            {"hour":  7, "minute": 55},
+            {"hour":  8, "minute": 55},
+            {"hour":  9, "minute": 55},
+            {"hour": 10, "minute": 55},
+            {"hour": 11, "minute": 55},
+            {"hour": 12, "minute": 55},
+            {"hour": 13, "minute": 55},
+            {"hour": 14, "minute": 55},
+            {"hour": 15, "minute": 55},
+            {"hour": 16, "minute": 55},
+            {"hour": 17, "minute": 55}
+        ],
+        [
+            {"hour": 12, "minute":  0},
+        ],
+        [
+            {"hour": 12, "minute":  0},
+        ]
     ],
     "WTWB": {
         "_comment": "When The Whistle Blows is a memorial service for Georgia Tech community deaths. It occurs once a year.",
