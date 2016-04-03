@@ -1,6 +1,6 @@
 {
-	"_comment":		"This file holds the schedule for the whistle to sound. The first index is Monday.",
-    "schedule": [
+	"_comment":		"This file holds the schedule for the whistle to sound. The first index is Monday. All times are 24-hour format.",
+    "regularSchedule": [
     	[
     		{"hour":  7, "minute": 55},
     		{"hour":  8, "minute": 55},
@@ -73,16 +73,19 @@
             {"hour": 17, "minute": 55}
     	],
     	[
-    		{"hour": 10, "minute":  0},
-    		{"hour": 11, "minute":  0},
     		{"hour": 12, "minute":  0},
-    		{"hour": 13, "minute":  0},
-    		{"hour": 14, "minute":  0},
-    		{"hour": 15, "minute":  0},
-    		{"hour": 16, "minute":  0}
     	],
     	[
     		
     	]
-    ]
+    ],
+    "WTWB": {
+        "_comment": "When The Whistle Blows is a memorial service for Georgia Tech community deaths. It occurs once a year.",
+        "year":     2016,
+        "month":    4,
+        "day":      11,
+        "hour":     17,
+        "minute":   15,
+        "delay":    30
+    }
 }
