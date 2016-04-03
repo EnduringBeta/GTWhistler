@@ -73,6 +73,7 @@ class Whistler:
     errorDelay          = 15
     minTweetTimeDelta   = 5
     postTweetDelay      = 15
+    loopDelay           = 0.5
 
     silenceBeforeWTWB   = 3 # Number of hours before When The Whistle Blows
                             # that the whistle will not do scheduled whistles
@@ -230,7 +231,7 @@ class Whistler:
 
     def createWhistleText(self):
         # Get previous tweets for later comparisons of time and text
-        self.prevTweets = t.statuses.user_timeline(
+        self.prevTweets = self.t.statuses.user_timeline(
                             screen_name=self.twitterConfig['bot_username'],
                             count=self.numTweetsCompare)
 
@@ -337,10 +338,12 @@ class Whistler:
                     # TODO
                     continue
 
+                # If scheduled whistle time and haven't just whistled
                 if self.scheduleWhistled == False and curTime in self.dailySchedule:
                     self.scheduledWhistle()
                 else:
                     self.scheduleWhistled = False
+                    sleep(self.loopDelay * secPerMin) # If not, sleep a little bit to lower CPU load
         except Exception as e:
             errorStr = "Error during loop: " + str(e)
             self.processException(errorStr)
