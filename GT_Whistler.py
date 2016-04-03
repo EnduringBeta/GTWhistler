@@ -88,6 +88,16 @@ class Whistler:
         self.scheduleConfigFile = scheduleFileInput
         self.logFile            = logFileInput
 
+        # Get current date and time (where the whistle is)
+        self.dt = datetime.now(self.tz)
+
+        if not self.fullSetup(): # If any setup did not succeed
+            return False
+
+        # Load schedule
+        self.curDay = self.dt.weekday()
+        self.dailySchedule = self.scheduleConfig['regularSchedule'][self.curDay]
+
     def processException(self, text):
         print(text + "\r\n")
         self.writeLog(text)
@@ -153,13 +163,16 @@ class Whistler:
 
         return True
 
-    def dailyCheck(self):
-
+    def fullSetup(self):
         successful = self.twitterSetup()
         successful = self.scheduleSetup() and successful
         successful = self.logFileSetup() and successful
 
-        if not successful: # If any setup did not succeed
+        return successful
+
+    def dailyCheck(self):
+
+        if not self.fullSetup(): # If any setup did not succeed
             return False
 
         self.curDay = self.dt.weekday()
@@ -296,7 +309,7 @@ class Whistler:
                 curTime = { "hour": self.dt.hour, "minute": self.dt.minute }
 
                 # If first check of a new day, run daily check
-                if self.curDay is not self.dt.weekday() or self.curDay is None:
+                if self.curDay is not self.dt.weekday():
                     if not self.dailyCheck(): # Check return value to see if should exit
                         return
 
