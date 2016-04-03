@@ -15,8 +15,10 @@ import json
 
 from datetime import datetime
 from pytz import timezone
-from time import sleep, strftime, strptime
+from time import sleep, strftime
 from random import randint
+from sys import stdout
+import logging
 
 class Whistler:
     """Class that holds functionality for processing conditions to tweet as @GT_Whistle twitter account"""
@@ -31,6 +33,7 @@ class Whistler:
     twitterConfig       = None
     scheduleConfig      = None
     log                 = None
+    logLevel            = logging.DEBUG
     t                   = None
 
     tz                  = timezone('US/Eastern')
@@ -100,10 +103,9 @@ class Whistler:
         self.dailySchedule = self.scheduleConfig['regularSchedule'][self.curDay]
 
     def processException(self, text):
-        print(text + "\r\n")
-        self.writeLog(text)
+        logging.error(text)
         self.directMessageOnError(text)
-        sleep(self.errorDelay * self.secPerMin) # Do nothing for 15 minutes to prevent spammy worst-case scenarios
+        sleep(self.errorDelay * self.secPerMin) # Do nothing for a while to prevent spammy worst-case scenarios
 
     def directMessageOnError(self, errorText):
         if self.t is not None and \
@@ -112,13 +114,7 @@ class Whistler:
             try:
                 self.t.direct_messages.new(user=self.twitterConfig['owner_username'], text=errorText)
             except Exception as e:
-                print("Failure when error DMing: " + str(e))
-
-    def writeLog(self, text):
-        try:
-            self.log.write(text + "\r\n")
-        except Exception as e:
-            print("Failure when logging: " + str(e))
+                logging.error("Failure when error DMing: " + str(e))
 
     def twitterSetup(self):
         try:
@@ -155,8 +151,11 @@ class Whistler:
 
     def logFileSetup(self):
         try:
-            self.log = open(self.logFile, "a")
-            self.log.write("\r\nGT_Whistler Log File\r\nStarted: {0}\r\n\r\n".format(self.dt.strftime(self.dtFormat)))
+            logging.basicConfig(
+                filename=self.logFile,
+                level=self.logLevel,
+                format='%(asctime)s: %(message)s')
+            logging.info("GT_Whistler Log File Started")
         except Exception as e:
             errorStr = "Error when setting up log file: " + str(e)
             self.processException(errorStr)
@@ -189,6 +188,11 @@ class Whistler:
         # TODO: Check if day of a football game
         if False:
             self.GAMEDAY = True
+
+        logging.info("Ran daily check:")
+        logging.info(" - Current Day: " + str(self.curDay))
+        logging.info(" - WTWB Day: " + str(self.wtwbToday))
+        logging.info(" - GAMEDAY: " + str(self.GAMEDAY))
 
         return True
 
@@ -250,10 +254,13 @@ class Whistler:
     # ----------------------
 
     def whistleTweet(self, text):
-        # Confirm it has been at least 5 minutes since the last tweet
+        # Confirm it has been at least a few minutes since the last tweet
         # Could be necessary if program started and stopped within 1 minute
-        lastTweetTime = strptime(self.prevTweets[0]['created_at'], self.dtFormatTwitter)
-        if 0 <= (self.dt.time - lastTweetTime).seconds <= self.minTweetTimeDelta * self.secPerMin:
+        lastTweetTime = datetime.strptime(self.prevTweets[0]['created_at'], \
+                                          self.dtFormatTwitter)             \
+                                           .astimezone(self.tz)
+
+        if 0 <= (self.dt - lastTweetTime).seconds <= self.minTweetTimeDelta * self.secPerMin:
             return
 
         try:
@@ -263,7 +270,7 @@ class Whistler:
             self.processException(errorStr)
 
         printStr = "Whistled: {0} @ {1}".format(text, self.dt.strftime(self.dtFormat))
-        self.writeLog(printStr)
+        logging.info(printStr)
 
         self.scheduleWhistled = True
 
@@ -271,8 +278,9 @@ class Whistler:
     # Note that this does not follow the restriction of only one message per 5 minutes
     def whistlePrint(self, text):
         printStr = "Whistled: {0} @ {1}".format(text, self.dt.strftime(self.dtFormat))
-        print(printStr + "\r\n")
-        self.writeLog(printStr)
+        print(printStr)
+        stdout.flush()
+        logging.info(printStr)
 
         self.scheduleWhistled = True
 
@@ -287,7 +295,7 @@ class Whistler:
         else:
             return
 
-        sleep(self.postTweetDelay * self.secPerMin) # Do nothing for 15 minutes
+        sleep(self.postTweetDelay * self.secPerMin) # Do nothing for a while
 
     def wtwbFirstWhistle(self):
         self.whistleTweet("(When The Whistle Blows is a memorial service taking place today to honor those lost from the Georgia Tech community this year.)")
@@ -343,7 +351,7 @@ class Whistler:
                     self.scheduledWhistle()
                 else:
                     self.scheduleWhistled = False
-                    sleep(self.loopDelay * secPerMin) # If not, sleep a little bit to lower CPU load
+                    sleep(self.loopDelay * self.secPerMin) # If not, sleep a little bit to lower CPU load
         except Exception as e:
             errorStr = "Error during loop: " + str(e)
             self.processException(errorStr)
@@ -357,7 +365,7 @@ twitterConfigFile   = "myConfig.json"
 # Custom file for holding all of the scheduled times the whistle should sound
 scheduleConfigFile  = "mySchedule.json"
 # File for holding logs of program behavior and actions
-logFile             = "log.txt"
+logFile             = "GTW_log.txt"
 
 GT_Whistle = Whistler(twitterConfigFile, scheduleConfigFile, logFile)
 GT_Whistle.start()
