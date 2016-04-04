@@ -96,6 +96,7 @@ class Whistler:
         self.dt = datetime.now(self.tz)
 
         if not self.fullSetup(): # If any setup did not succeed
+            # TODO: Make this failure louder!
             return False
 
         # Load schedule
