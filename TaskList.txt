@@ -1,0 +1,27 @@
+Task List for GT_Whistle
+
+BUGS
+Whistle at beginning of minute
+	Check if minute before and check often for a bit
+Make all setup failures loud
+Put whistleTweet() end code in "else" or "finally"
+Change this line:
+	"# If not exactly time, start again
+	else:
+    		continue"
+
+Minimize calls to Twitter
+
+FEATURES
+Add check for if below 140 characters
+Add commencement event
+Auto-like mentions
+DM me on March 1st and July 1st to input new WTWB/football dates
+
+EPICS
+Find best way to learn football game dates
+Find best way to obtain football scores automatically to whistle when GT scores
+	# O's = score?
+Respond to DMs
+	Use people's suggestions? (https://www.reddit.com/r/gatech/comments/4cr5gs/how_would_you_write_in_letters_the_sound_the/)
+	Do only at whistle time?
