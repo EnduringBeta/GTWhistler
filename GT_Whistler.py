@@ -96,6 +96,7 @@ class Whistler:
         self.dt = datetime.now(self.tz)
 
         if not self.fullSetup(): # If any setup did not succeed
+            # TODO: Make this failure louder!
             return False
 
         # Load schedule
@@ -297,6 +298,7 @@ class Whistler:
 
         sleep(self.postTweetDelay * self.secPerMin) # Do nothing for a while
 
+    # TODO: Add reminder dates that send out DM to owner to update WTWB and football dates
     def wtwbFirstWhistle(self):
         self.whistleTweet("(When The Whistle Blows is a memorial service taking place today to honor those lost from the Georgia Tech community this year.)")
 
