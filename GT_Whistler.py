@@ -42,6 +42,9 @@ class Whistler:
     dtFormatTwitter     = "%a %b %d %H:%M:%S %z %Y"
     secPerMin           = 60
     minPerHour          = 60
+    maxHour             = 23
+    maxMinute           = 59
+    maxSecond           = 59
     dailySchedule       = None
     scheduleWhistled    = False
     prevTweets          = None
@@ -73,10 +76,11 @@ class Whistler:
     Saturday            = 5
     Sunday              = 6
 
-    errorDelay          = 15
-    minTweetTimeDelta   = 5
-    postTweetDelay      = 15
-    loopDelay           = 0.5
+    errorDelay          = 15  # minutes
+    minTweetTimeDelta   = 5   # minutes
+    postTweetDelay      = 15  # minutes
+    loopDelay           = 0.5 # minutes
+    wakePrepTime        = 10  # seconds
 
     silenceBeforeWTWB   = 3 # Number of hours before When The Whistle Blows
                             # that the whistle will not do scheduled whistles
@@ -96,7 +100,7 @@ class Whistler:
         self.dt = datetime.now(self.tz)
 
         if not self.fullSetup(): # If any setup did not succeed
-            # TODO: Make this failure louder!
+            self.processException("Error during initialization setup!")
             return False
 
         # Load schedule
@@ -174,6 +178,7 @@ class Whistler:
     def dailyCheck(self):
 
         if not self.fullSetup(): # If any setup did not succeed
+            self.processException("Error during daily check setup!")
             return False
 
         self.curDay = self.dt.weekday()
@@ -196,6 +201,36 @@ class Whistler:
         logging.info(" - GAMEDAY: " + str(self.GAMEDAY))
 
         return True
+
+    # Ignores special day considerations
+    def getNextScheduledWhistle(self):
+        nextTime = { "hour": self.maxHour, "minute": self.maxMinute }
+        self.dt = datetime.now(self.tz)
+        # For every time on the schedule today
+        for time in self.dailySchedule:
+            # If scheduled time is in the future
+            if time.hour > self.dt.hour or \
+                   (time.hour   is self.dt.hour and \
+                    time.minute >  self.dt.minute):
+                # If scheduled time is sooner than working time
+                if time.hour < nextTime.hour or \
+                       (time.hour   is nextTime.hour and \
+                        time.minute <  nextTime.minute):
+                    nextTime = time
+
+        return nextTime
+
+    def sleepUntil(self, nextTime):
+        self.dt = datetime.now(self.tz)
+        secToNextTime = (nextTime.hour   -   self.dt.hour) * self.minPerHour * self.secPerMin + \
+                        (nextTime.minute - self.dt.minute) * self.secPerMin + \
+                        (self.secPerMin  - self.dt.seconds)
+
+        try:
+            sleep(secToNextTime) # Sleep until next time
+        except Exception as e:
+            errorStr = "Error when trying to sleep: " + str(e)
+            self.processException(errorStr)
 
     def generateRandomWhistleText(self):
         # Calculate randomized numbers of letters
@@ -269,11 +304,11 @@ class Whistler:
         except Exception as e:
             errorStr = "Error when tweeting: " + text + " (" + str(e) + ")"
             self.processException(errorStr)
+        else:
+            printStr = "Whistled: {0} @ {1}".format(text, self.dt.strftime(self.dtFormat))
+            logging.info(printStr)
 
-        printStr = "Whistled: {0} @ {1}".format(text, self.dt.strftime(self.dtFormat))
-        logging.info(printStr)
-
-        self.scheduleWhistled = True
+            self.scheduleWhistled = True
 
     # Method primarily for debugging
     # Note that this does not follow the restriction of only one message per 5 minutes
@@ -291,8 +326,8 @@ class Whistler:
 
         # Only tweet if not recently whistled
         if not self.scheduleWhistled:
-            self.whistleTweet(text)
-            #self.whistlePrint(text)
+            #self.whistleTweet(text)
+            self.whistlePrint(text) # For testing
         else:
             return
 
@@ -317,8 +352,7 @@ class Whistler:
             while(1):
                 # Get current date and time (where the whistle is)
                 self.dt = datetime.now(self.tz)
-                curTime = { "hour": self.dt.hour, "minute": self.dt.minute }
-
+                
                 # If first check of a new day, run daily check
                 if self.curDay is not self.dt.weekday():
                     if not self.dailyCheck(): # Check return value to see if should exit
@@ -339,8 +373,11 @@ class Whistler:
                             sleep(self.minPerHour * self.secPerMin) # Remain quiet after ceremony
                             self.wtwbToday = False
                             continue
-                        # If not exactly time, start again
+                        # If near but not exactly time, wait until then
                         else:
+                            self.sleepUntil({ "hour":   self.wtwbTime['hour'],
+                                              "minute": self.wtwbTime['minute']
+                                            })
                             continue
 
                 # If football game today
@@ -348,12 +385,14 @@ class Whistler:
                     # TODO
                     continue
 
+                curTime = { "hour": self.dt.hour, "minute": self.dt.minute }
                 # If scheduled whistle time and haven't just whistled
-                if self.scheduleWhistled == False and curTime in self.dailySchedule:
+                if self.scheduleWhistled is False and curTime in self.dailySchedule:
                     self.scheduledWhistle()
                 else:
                     self.scheduleWhistled = False
-                    sleep(self.loopDelay * self.secPerMin) # If not, sleep a little bit to lower CPU load
+                    self.sleepUntil(getNextScheduledWhistle())
+                    
         except Exception as e:
             errorStr = "Error during loop: " + str(e)
             self.processException(errorStr)

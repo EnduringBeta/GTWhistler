@@ -1,14 +1,7 @@
 Task List for GT_Whistle
 
 BUGS
-Whistle at beginning of minute
-	Check if minute before and check often for a bit
-Make all setup failures loud
-Put whistleTweet() end code in "else" or "finally"
-Change this line:
-	"# If not exactly time, start again
-	else:
-    		continue"
+Test new delay strategy of looking up next scheduled whistle and sleeping until the right time (hopefully)
 
 Minimize calls to Twitter
 
