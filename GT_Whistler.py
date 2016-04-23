@@ -391,7 +391,7 @@ class Whistler:
                     self.scheduledWhistle()
                 else:
                     self.scheduleWhistled = False
-                    self.sleepUntil(getNextScheduledWhistle())
+                    self.sleepUntil(self.getNextScheduledWhistle())
                     
         except Exception as e:
             errorStr = "Error during loop: " + str(e)
