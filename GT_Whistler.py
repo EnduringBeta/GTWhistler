@@ -209,22 +209,22 @@ class Whistler:
         # For every time on the schedule today
         for time in self.dailySchedule:
             # If scheduled time is in the future
-            if time.hour > self.dt.hour or \
-                   (time.hour   is self.dt.hour and \
-                    time.minute >  self.dt.minute):
+            if time['hour'] > self.dt.hour or \
+                   (time['hour']   is self.dt.hour and \
+                    time['minute'] >  self.dt.minute):
                 # If scheduled time is sooner than working time
-                if time.hour < nextTime.hour or \
-                       (time.hour   is nextTime.hour and \
-                        time.minute <  nextTime.minute):
+                if time['hour'] < nextTime['hour'] or \
+                       (time['hour']   is nextTime['hour'] and \
+                        time['minute'] <  nextTime['minute']):
                     nextTime = time
 
         return nextTime
 
     def sleepUntil(self, nextTime):
         self.dt = datetime.now(self.tz)
-        secToNextTime = (nextTime.hour   -   self.dt.hour) * self.minPerHour * self.secPerMin + \
-                        (nextTime.minute - self.dt.minute) * self.secPerMin + \
-                        (self.secPerMin  - self.dt.seconds)
+        secToNextTime = (nextTime['hour']   -   self.dt.hour) * self.minPerHour * self.secPerMin + \
+                        (nextTime['minute'] - self.dt.minute) * self.secPerMin + \
+                        (self.secPerMin     - self.dt.second)
 
         try:
             sleep(secToNextTime) # Sleep until next time
