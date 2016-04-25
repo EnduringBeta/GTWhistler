@@ -78,9 +78,6 @@ class Whistler:
 
     errorDelay          = 15  # minutes
     minTweetTimeDelta   = 5   # minutes
-    postTweetDelay      = 15  # minutes
-    loopDelay           = 0.5 # minutes
-    wakePrepTime        = 10  # seconds
 
     silenceBeforeWTWB   = 3 # Number of hours before When The Whistle Blows
                             # that the whistle will not do scheduled whistles
@@ -296,9 +293,12 @@ class Whistler:
                                           self.dtFormatTwitter)             \
                                            .astimezone(self.tz)
 
-        if 0 <= (self.dt - lastTweetTime).seconds <= self.minTweetTimeDelta * self.secPerMin:
+        secSinceLastTweet = (self.dt - lastTweetTime).seconds
+        if 0 <= secSinceLastTweet <= self.minTweetTimeDelta * self.secPerMin:
+            sleep((self.minTweetTimeDelta * self.secPerMin) - secSinceLastTweet)
             return
 
+        # Otherwise, tweet!
         try:
             self.t.statuses.update(status=text)
         except Exception as e:
@@ -326,12 +326,10 @@ class Whistler:
 
         # Only tweet if not recently whistled
         if not self.scheduleWhistled:
-            #self.whistleTweet(text)
-            self.whistlePrint(text) # For testing
+            self.whistleTweet(text)
+            #self.whistlePrint(text) # For testing
         else:
             return
-
-        sleep(self.postTweetDelay * self.secPerMin) # Do nothing for a while
 
     # TODO: Add reminder dates that send out DM to owner to update WTWB and football dates
     def wtwbFirstWhistle(self):
@@ -389,9 +387,11 @@ class Whistler:
                 # If scheduled whistle time and haven't just whistled
                 if self.scheduleWhistled is False and curTime in self.dailySchedule:
                     self.scheduledWhistle()
+                    continue
                 else:
                     self.scheduleWhistled = False
                     self.sleepUntil(self.getNextScheduledWhistle())
+                    continue
                     
         except Exception as e:
             errorStr = "Error during loop: " + str(e)
