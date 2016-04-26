@@ -367,8 +367,7 @@ class Whistler:
     def start(self):
 
         self.dt = datetime.now(self.tz)
-        self.DM("Wetting whistle... @ {0}".format(self.dt.strftime(self.dtFormat)))
-
+        self.DM("Wetting whistle (test)... @ {0}".format(self.dt.strftime(self.dtFormat)))
 
         try:
             while(1):
