@@ -82,7 +82,7 @@ class Whistler:
     Saturday            = 5
     Sunday              = 6
 
-    startupDelay        = 30 # seconds
+    startupDelay        = 10 # seconds
     errorDelay          = 15 # minutes
     minTweetTimeDelta   = 5  # minutes
 
