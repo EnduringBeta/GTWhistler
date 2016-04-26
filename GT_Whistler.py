@@ -42,9 +42,15 @@ class Whistler:
     dtFormatTwitter     = "%a %b %d %H:%M:%S %z %Y"
     secPerMin           = 60
     minPerHour          = 60
-    maxHour             = 23
-    maxMinute           = 59
-    maxSecond           = 59
+    maxHour             = 24
+    lastHour            = 23
+    minHour             = 0
+    maxMinute           = 60
+    lastMinute          = 59
+    minMinute           = 0
+    maxSecond           = 60
+    lastSecond          = 59
+    minSecond           = 0
     dailySchedule       = None
     scheduleWhistled    = False
     prevTweets          = None
@@ -201,7 +207,7 @@ class Whistler:
 
     # Ignores special day considerations
     def getNextScheduledWhistle(self):
-        nextTime = { "hour": self.maxHour, "minute": self.maxMinute }
+        nextTime = { "hour": self.maxHour, "minute": self.minMinute }
         self.dt = datetime.now(self.tz)
         # For every time on the schedule today
         for time in self.dailySchedule:
@@ -221,7 +227,13 @@ class Whistler:
         self.dt = datetime.now(self.tz)
         secToNextTime = (nextTime['hour']   -   self.dt.hour) * self.minPerHour * self.secPerMin + \
                         (nextTime['minute'] - self.dt.minute) * self.secPerMin + \
-                        (self.secPerMin     - self.dt.second)
+                        (self.minSecond     - self.dt.second)
+                        # Find time difference to calculate total sleep time.
+                        # If no more scheduled times, calculation based on 24h:00m for daily check.
+                        # Next time should always be beginning of minute, so subtract off
+                        # the seconds we are currently already into the current minute.
+                        # Extra milliseconds mean wake occurs within the
+                        # first second of the minute, which is acceptable noise.
 
         try:
             sleep(secToNextTime) # Sleep until next time
