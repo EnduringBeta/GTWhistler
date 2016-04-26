@@ -299,7 +299,7 @@ class Whistler:
     # --- OUTPUT METHODS ---
     # ----------------------
 
-    def DM(message):
+    def DM(self, message):
         try:
             self.t.direct_messages.new(user=self.twitterConfig['owner_username'], text=message)
         except Exception as e:
@@ -367,7 +367,8 @@ class Whistler:
     def start(self):
 
         self.dt = datetime.now(self.tz)
-        self.DM("Wetting whistle... @ " + self.dt.strftime(self.dtFormat))
+        self.DM("Wetting whistle... @ {0}".format(self.dt.strftime(self.dtFormat)))
+
 
         try:
             while(1):
