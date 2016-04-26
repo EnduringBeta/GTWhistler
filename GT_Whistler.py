@@ -82,8 +82,9 @@ class Whistler:
     Saturday            = 5
     Sunday              = 6
 
-    errorDelay          = 15  # minutes
-    minTweetTimeDelta   = 5   # minutes
+    startupDelay        = 30 # seconds
+    errorDelay          = 15 # minutes
+    minTweetTimeDelta   = 5  # minutes
 
     silenceBeforeWTWB   = 3 # Number of hours before When The Whistle Blows
                             # that the whistle will not do scheduled whistles
@@ -366,6 +367,8 @@ class Whistler:
 
     def start(self):
 
+        # Allow time for system to come up
+        sleep(self.startupDelay)
         self.dt = datetime.now(self.tz)
         self.DM("Wetting whistle... @ {0}".format(self.dt.strftime(self.dtFormat)))
 
