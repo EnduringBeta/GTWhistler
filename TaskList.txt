@@ -1,12 +1,11 @@
 Task List for GT_Whistle
 
-BUGS
-Test new delay strategy of looking up next scheduled whistle and sleeping until the right time (hopefully)
-
-Minimize calls to Twitter
+TESTING
+Long-term test new sleeping (ongoing)
+Test WTWB day
 
 FEATURES
-Add check for if below 140 characters
+Add check for if below 140 characters (and DMs?)
 Add commencement event
 Auto-like mentions
 DM me on March 1st and July 1st to input new WTWB/football dates

@@ -119,10 +119,7 @@ class Whistler:
         if self.t is not None and \
            self.twitterConfig is not None and \
            self.twitterConfig['owner_username'] is not None:
-            try:
-                self.t.direct_messages.new(user=self.twitterConfig['owner_username'], text=errorText)
-            except Exception as e:
-                logging.error("Failure when error DMing: " + str(e))
+            self.DM(errorText)
 
     def twitterSetup(self):
         try:
@@ -177,6 +174,10 @@ class Whistler:
         successful = self.logFileSetup() and successful
 
         return successful
+
+    # -----
+    # Setup
+    # -----
 
     def dailyCheck(self):
 
@@ -298,6 +299,12 @@ class Whistler:
     # --- OUTPUT METHODS ---
     # ----------------------
 
+    def DM(message):
+        try:
+            self.t.direct_messages.new(user=self.twitterConfig['owner_username'], text=message)
+        except Exception as e:
+            logging.error("Failure when DMing: " + str(e))
+
     def whistleTweet(self, text):
         # Confirm it has been at least a few minutes since the last tweet
         # Could be necessary if program started and stopped within 1 minute
@@ -358,6 +365,10 @@ class Whistler:
     # ----------------------------
 
     def start(self):
+
+        self.dt = datetime.now(self.tz)
+        self.DM("Wetting whistle... @ " + self.dt.strftime(self.dtFormat))
+
         try:
             while(1):
                 # Get current date and time (where the whistle is)
