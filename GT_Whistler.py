@@ -1,4 +1,4 @@
-# GT_Whistler is an automated Twitter account that tweets
+# GTWhistler is an automated Twitter account that tweets
 # whistle noises at the times the Georgia Tech whistle does.
 
 # It is built upon the Python Twitter API: https://github.com/sixohsix/twitter/
@@ -21,7 +21,7 @@ from sys import stdout
 import logging
 
 class Whistler:
-    """Class that holds functionality for processing conditions to tweet as @GT_Whistle twitter account"""
+    """Class that holds functionality for processing conditions to tweet as @GTWhistle twitter account"""
 
     # ---------------
     # --- Members ---
@@ -161,7 +161,7 @@ class Whistler:
                 filename=self.logFile,
                 level=self.logLevel,
                 format='%(asctime)s: %(message)s')
-            logging.info("GT_Whistler Log File Started")
+            logging.info("GTWhistler Log File Started")
         except Exception as e:
             errorStr = "Error when setting up log file: " + str(e)
             self.processException(errorStr)
@@ -434,5 +434,5 @@ scheduleConfigFile  = "mySchedule.json"
 # File for holding logs of program behavior and actions
 logFile             = "GTW_log.txt"
 
-GT_Whistle = Whistler(twitterConfigFile, scheduleConfigFile, logFile)
-GT_Whistle.start()
+GTWhistle = Whistler(twitterConfigFile, scheduleConfigFile, logFile)
+GTWhistle.start()

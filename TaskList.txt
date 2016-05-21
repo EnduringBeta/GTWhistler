@@ -1,7 +1,6 @@
-Task List for GT_Whistle
+Task List for GTWhistle
 
 TESTING
-Long-term test new sleeping (ongoing)
 Test WTWB day
 
 FEATURES

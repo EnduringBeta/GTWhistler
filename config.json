@@ -1,7 +1,7 @@
 {
     "_comment":             "This file holds the Twitter API information used to access your account. Don't share this publicly! (Look here: apps.twitter.com)",
     "owner_username":       "",
-    "bot_username":         "GT_Whistle",
+    "bot_username":         "GTWhistle",
     "consumer_key":         "",
     "consumer_secret":      "",
     "access_token":         "",
