@@ -1,0 +1,32 @@
+GTWhistler is written to run on a Raspberry Pi 2B, though it can run on any system with internet access and the ability to execute Python code.
+
+In order to make the program start automatically upon boot of the Pi, a service must be made. Many options exist for starting a program on power-up, but creating a service gives one additional advantage: if ever the process stops executing, it will be restarted. If GTWhistler.py completes execution, which should only happen if an error in the main loop occurs, it will eventually start up again without needing to interface with the Pi.
+
+I was convinced of this solution by the following link: http://raspberrypi.stackexchange.com/questions/28199/raspberry-pi-starting-programs-automatically-on-startup
+
+The link shares how to appropriately create a service directory and write a script to execute. The script used for this project is "run" and is also found in this folder.
+
+---
+
+An explanation for each line follows:
+
+	#!/bin/sh
+
+Indicates the file is a bash script
+
+	# Wait for system to come up
+	sleep 10
+
+Crucial step that came out of many hours of debugging. Most likely the WiFi adapter is not ready to properly access GitHub or Twitter the second services start executing. This was causing many mysterious problems. Ten seconds is a generous amount that could be tested further and possibly be lowered.
+
+	# Check for code updates from GitHub
+	cd /home/pi/Projects/GTWhistler/ && git pull
+
+Move into the project directory in the Pi and grab any code updates pushed since last boot. This allows me to simply unplug/plug the Pi to update code without connecting an HDMI cable, keyboard, and mouse just to navigate to the folder manually. Note that this assumes a git repository exists already in this folder and that the remote is set up.
+
+	# Run the GTWhistler program
+	exec python3.4 /home/pi/Projects/GTWhistler/GTWhistler.py
+
+Actually run the program. The Python version is specified because the Pi comes with both Python 2 and 3. The program will loop until an error occurs or the Pi is turned off.
+
+Absolute paths are used because during testing some issues were occurring that seemed to imply paths weren't changing appropriately. Sometimes when running scripts, changing directories doesn't always have the effect you'd expect. It might be unnecessary, but I haven't gone back to debug.

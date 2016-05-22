@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Wait for system to come up
+sleep 10
+# Check for code updates from GitHub
+cd /home/pi/Projects/GTWhistler/ && git pull
+# Run the GTWhistler program
+exec python3.4 /home/pi/Projects/GTWhistler/GTWhistler.py
