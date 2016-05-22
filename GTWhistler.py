@@ -370,7 +370,7 @@ class Whistler:
         # Allow time for system to come up
         sleep(self.startupDelay)
         self.dt = datetime.now(self.tz)
-        self.DM("Wetting whistle... @ {0}".format(self.dt.strftime(self.dtFormat)))
+        self.DM("Dampening whistle... @ {0}".format(self.dt.strftime(self.dtFormat)))
 
         try:
             while(1):
