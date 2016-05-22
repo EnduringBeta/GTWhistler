@@ -1,4 +1,5 @@
 __pycache__/
+supervise/
 GTW_log.txt
 exampleTweetData.txt
 myConfig.json

@@ -430,9 +430,9 @@ class Whistler:
 # Custom file for authentication data not to be shared publicly
 twitterConfigFile   = "myConfig.json"
 # Custom file for holding all of the scheduled times the whistle should sound
-scheduleConfigFile  = "mySchedule.json"
+scheduleConfigFile  = "schedule.json"
 # File for holding logs of program behavior and actions
 logFile             = "GTW_log.txt"
 
-#GTWhistle = Whistler(twitterConfigFile, scheduleConfigFile, logFile)
+GTWhistle = Whistler(twitterConfigFile, scheduleConfigFile, logFile)
 GTWhistle.start()
