@@ -434,5 +434,5 @@ scheduleConfigFile  = "mySchedule.json"
 # File for holding logs of program behavior and actions
 logFile             = "GTW_log.txt"
 
-GTWhistle = Whistler(twitterConfigFile, scheduleConfigFile, logFile)
+#GTWhistle = Whistler(twitterConfigFile, scheduleConfigFile, logFile)
 GTWhistle.start()
