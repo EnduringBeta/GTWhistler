@@ -275,7 +275,7 @@ class Whistler:
         # Compare text against past tweets to avoid duplicates
         # (which will not be tweeted as per Twitter rules)
         for tweet in self.prevTweets:
-            if tweet['text'] is text:
+            if tweet['text'] == text:
                 return False
 
         return True
