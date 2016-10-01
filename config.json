@@ -1,9 +1,10 @@
 {
-    "_comment":             "This file holds the Twitter API information used to access your account. Don't share this publicly! (Look here: apps.twitter.com)",
+    "_comment":             "This file holds the API information used to access the Twitter account and football stats. Don't share this publicly! (Look here: apps.twitter.com, developer.fantasydata.com)",
     "owner_username":       "",
     "bot_username":         "GTWhistle",
     "consumer_key":         "",
     "consumer_secret":      "",
     "access_token":         "",
-    "access_token_secret":  ""
+    "access_token_secret":  "",
+    "fantasy_data_key":     ""
 }

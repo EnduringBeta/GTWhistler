@@ -1,5 +1,6 @@
 __pycache__/
 supervise/
+.idea/
 GTW_log.txt
 exampleTweetData.txt
 myConfig.json

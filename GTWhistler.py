@@ -14,11 +14,13 @@ from twitter import *
 import json
 
 from datetime import datetime
-from pytz import timezone
-from time import sleep, strftime
+from time import sleep
 from random import randint
 from sys import stdout
 import logging
+
+import Football
+import Constants
 
 class Whistler:
     """Class that holds functionality for processing conditions to tweet as @GTWhistle twitter account"""
@@ -27,85 +29,41 @@ class Whistler:
     # --- Members ---
     # ---------------
 
-    twitterConfigFile   = None
+    APIConfigFile       = None
     scheduleConfigFile  = None
     logFile             = None
-    twitterConfig       = None
+    APIConfig           = None
     scheduleConfig      = None
     log                 = None
-    logLevel            = logging.DEBUG
     t                   = None
 
-    tz                  = timezone('US/Eastern')
     dt                  = None
-    dtFormat            = "%a, %d %b %Y - %H:%M:%S"
-    dtFormatTwitter     = "%a %b %d %H:%M:%S %z %Y"
-    secPerMin           = 60
-    minPerHour          = 60
-    maxHour             = 24
-    lastHour            = 23
-    minHour             = 0
-    maxMinute           = 60
-    lastMinute          = 59
-    minMinute           = 0
-    maxSecond           = 60
-    lastSecond          = 59
-    minSecond           = 0
+
     dailySchedule       = None
     scheduleWhistled    = False
     prevTweets          = None
-
-    defaultWhistleText  = "shhvreeeEEEEEEEEEEOOOOOooow"
-    SsDefault           =  2
-    HsDefault           =  2
-    LowEsDefault        =  3
-    HighEsDefault       = 10
-    HighOsDefault       =  5
-    LowOsDefault        =  3
-    SsDelta             =  1
-    HsDelta             =  1
-    LowEsDelta          =  2
-    HighEsDelta         =  5
-    HighOsDelta         =  2
-    LowOsDelta          =  2
 
     wtwbToday           = False
     wtwbTime            = None
     GAMEDAY             = False
 
     curDay              = None
-    Monday              = 0
-    Tuesday             = 1
-    Wednesday           = 2
-    Thursday            = 3
-    Friday              = 4
-    Saturday            = 5
-    Sunday              = 6
-
-    startupDelay        = 10 # seconds
-    errorDelay          = 15 # minutes
-    minTweetTimeDelta   = 5  # minutes
-
-    silenceBeforeWTWB   = 3 # Number of hours before When The Whistle Blows
-                            # that the whistle will not do scheduled whistles
-    numTweetsCompare    = 5 # Number of past tweets to compare against when
-                            # generating new tweet text
 
     # ---------------------
     # --- SETUP METHODS ---
     # ---------------------
 
-    def __init__(self, twitterFileInput, scheduleFileInput, logFileInput):
-        self.twitterConfigFile  = twitterFileInput
+    def __init__(self, APIFileInput, scheduleFileInput, logFileInput):
+        self.APIConfigFile  = APIFileInput
         self.scheduleConfigFile = scheduleFileInput
         self.logFile            = logFileInput
 
         # Get current date and time (where the whistle is)
-        self.dt = datetime.now(self.tz)
+        self.dt = datetime.now(Constants.tz)
 
         if not self.fullSetup(): # If any setup did not succeed
             self.processException("Error during initialization setup!")
-            return False
+            return
 
         # Load schedule
         self.curDay = self.dt.weekday()
@@ -114,18 +72,18 @@ class Whistler:
     def processException(self, text):
         logging.error(text)
         self.directMessageOnError(text)
-        sleep(self.errorDelay * self.secPerMin) # Do nothing for a while to prevent spammy worst-case scenarios
+        sleep(Constants.errorDelay * Constants.secPerMin) # Do nothing for a while to prevent spammy worst-case scenarios
 
     def directMessageOnError(self, errorText):
         if self.t is not None and \
-           self.twitterConfig is not None and \
-           self.twitterConfig['owner_username'] is not None:
+           self.APIConfig is not None and \
+           self.APIConfig['owner_username'] is not None:
             self.DM(errorText)
 
     def twitterSetup(self):
         try:
-            with open(self.twitterConfigFile, encoding='utf-8') as dataFile:
-                self.twitterConfig = json.loads(dataFile.read())
+            with open(self.APIConfigFile, encoding='utf-8') as dataFile:
+                self.APIConfig = json.loads(dataFile.read())
         except Exception as e:
             errorStr = "Error when loading configuration: " + str(e)
             self.processException(errorStr)
@@ -133,10 +91,10 @@ class Whistler:
 
         try:
             self.t = Twitter(auth=OAuth(
-                consumer_key    =   self.twitterConfig["consumer_key"],
-                consumer_secret =   self.twitterConfig["consumer_secret"],
-                token           =   self.twitterConfig["access_token"],
-                token_secret    =   self.twitterConfig["access_token_secret"]))
+                consumer_key    =   self.APIConfig["consumer_key"],
+                consumer_secret =   self.APIConfig["consumer_secret"],
+                token           =   self.APIConfig["access_token"],
+                token_secret    =   self.APIConfig["access_token_secret"]))
         except Exception as e:
             errorStr = "Error when authenticating with Twitter: " + str(e)
             self.processException(errorStr)
@@ -159,7 +117,7 @@ class Whistler:
         try:
             logging.basicConfig(
                 filename=self.logFile,
-                level=self.logLevel,
+                level=Constants.logLevel,
                 format='%(asctime)s: %(message)s')
             logging.info("GTWhistler Log File Started")
         except Exception as e:
@@ -209,27 +167,27 @@ class Whistler:
 
     # Ignores special day considerations
     def getNextScheduledWhistle(self):
-        nextTime = { "hour": self.maxHour, "minute": self.minMinute }
-        self.dt = datetime.now(self.tz)
+        nextTime = { "hour": Constants.maxHour, "minute": Constants.minMinute }
+        self.dt = datetime.now(Constants.tz)
         # For every time on the schedule today
         for time in self.dailySchedule:
             # If scheduled time is in the future
             if time['hour'] > self.dt.hour or \
-                   (time['hour']   is self.dt.hour and \
+                   (time['hour']   is self.dt.hour and
                     time['minute'] >  self.dt.minute):
                 # If scheduled time is sooner than working time
                 if time['hour'] < nextTime['hour'] or \
-                       (time['hour']   is nextTime['hour'] and \
+                       (time['hour']   is nextTime['hour'] and
                         time['minute'] <  nextTime['minute']):
                     nextTime = time
 
         return nextTime
 
     def sleepUntil(self, nextTime):
-        self.dt = datetime.now(self.tz)
-        secToNextTime = (nextTime['hour']   -   self.dt.hour) * self.minPerHour * self.secPerMin + \
-                        (nextTime['minute'] - self.dt.minute) * self.secPerMin + \
-                        (self.minSecond     - self.dt.second)
+        self.dt = datetime.now(Constants.tz)
+        secToNextTime = (nextTime['hour']    - self.dt.hour  ) * Constants.minPerHour * Constants.secPerMin + \
+                        (nextTime['minute']  - self.dt.minute) * Constants.secPerMin  + \
+                        (Constants.minSecond - self.dt.second)
                         # Find time difference to calculate total sleep time.
                         # If no more scheduled times, calculation based on 24h:00m for daily check.
                         # Next time should always be beginning of minute, so subtract off
@@ -243,14 +201,21 @@ class Whistler:
             errorStr = "Error when trying to sleep: " + str(e)
             self.processException(errorStr)
 
-    def generateRandomWhistleText(self):
+    @staticmethod
+    def generateRandomWhistleText():
         # Calculate randomized numbers of letters
-        numSs     = randint(    self.SsDefault - self.SsDelta,     self.SsDefault     + self.SsDelta)
-        numHs     = randint(    self.HsDefault - self.HsDelta,     self.HsDefault     + self.HsDelta)
-        numLowEs  = randint( self.LowEsDefault - self.LowEsDelta,  self.LowEsDefault  + self.LowEsDelta)
-        numHighEs = randint(self.HighEsDefault - self.HighEsDelta, self.HighEsDefault + self.HighEsDelta)
-        numHighOs = randint(self.HighOsDefault - self.HighOsDelta, self.HighOsDefault + self.HighOsDelta)
-        numLowOs  = randint( self.LowOsDefault - self.LowOsDelta,  self.LowOsDefault  + self.LowOsDelta)
+        numSs     = randint(Constants.SsDefault     - Constants.SsDelta,
+                            Constants.SsDefault     + Constants.SsDelta)
+        numHs     = randint(Constants.HsDefault     - Constants.HsDelta,
+                            Constants.HsDefault     + Constants.HsDelta)
+        numLowEs  = randint(Constants.LowEsDefault  - Constants.LowEsDelta,
+                            Constants.LowEsDefault  + Constants.LowEsDelta)
+        numHighEs = randint(Constants.HighEsDefault - Constants.HighEsDelta,
+                            Constants.HighEsDefault + Constants.HighEsDelta)
+        numHighOs = randint(Constants.HighOsDefault - Constants.HighOsDelta,
+                            Constants.HighOsDefault + Constants.HighOsDelta)
+        numLowOs  = randint(Constants.LowOsDefault  - Constants.LowOsDelta,
+                            Constants.LowOsDefault  + Constants.LowOsDelta)
 
         # Fill out text
         text = ""
@@ -283,12 +248,13 @@ class Whistler:
     def createWhistleText(self):
         # Get previous tweets for later comparisons of time and text
         self.prevTweets = self.t.statuses.user_timeline(
-                            screen_name=self.twitterConfig['bot_username'],
-                            count=self.numTweetsCompare)
+                            screen_name=self.APIConfig['bot_username'],
+                            count=Constants.numTweetsCompare)
 
+        potentialText = ""
         validTextFound = False
 
-        while (not validTextFound):
+        while not validTextFound:
             # Generate tweet text
             potentialText = self.generateRandomWhistleText()
             # Check if text is new
@@ -302,20 +268,20 @@ class Whistler:
 
     def DM(self, message):
         try:
-            self.t.direct_messages.new(user=self.twitterConfig['owner_username'], text=message)
+            self.t.direct_messages.new(user=self.APIConfig['owner_username'], text=message)
         except Exception as e:
             logging.error("Failure when DMing: " + str(e))
 
     def whistleTweet(self, text):
         # Confirm it has been at least a few minutes since the last tweet
         # Could be necessary if program started and stopped within 1 minute
-        lastTweetTime = datetime.strptime(self.prevTweets[0]['created_at'], \
-                                          self.dtFormatTwitter)             \
-                                           .astimezone(self.tz)
+        lastTweetTime = datetime.strptime(self.prevTweets[0]['created_at'],
+                                          Constants.dtFormatTwitter) \
+                                           .astimezone(Constants.tz)
 
         secSinceLastTweet = (self.dt - lastTweetTime).seconds
-        if 0 <= secSinceLastTweet <= self.minTweetTimeDelta * self.secPerMin:
-            sleep((self.minTweetTimeDelta * self.secPerMin) - secSinceLastTweet)
+        if 0 <= secSinceLastTweet <= Constants.minTweetTimeDelta * Constants.secPerMin:
+            sleep((Constants.minTweetTimeDelta * Constants.secPerMin) - secSinceLastTweet)
             return
 
         # Otherwise, tweet!
@@ -325,7 +291,7 @@ class Whistler:
             errorStr = "Error when tweeting: " + text + " (" + str(e) + ")"
             self.processException(errorStr)
         else:
-            printStr = "Whistled: {0} @ {1}".format(text, self.dt.strftime(self.dtFormat))
+            printStr = "Whistled: {0} @ {1}".format(text, self.dt.strftime(Constants.dtFormat))
             logging.info(printStr)
 
             self.scheduleWhistled = True
@@ -333,7 +299,7 @@ class Whistler:
     # Method primarily for debugging
     # Note that this does not follow the restriction of only one message per 5 minutes
     def whistlePrint(self, text):
-        printStr = "Whistled: {0} @ {1}".format(text, self.dt.strftime(self.dtFormat))
+        printStr = "Whistled: {0} @ {1}".format(text, self.dt.strftime(Constants.dtFormat))
         print(printStr)
         stdout.flush()
         logging.info(printStr)
@@ -346,8 +312,10 @@ class Whistler:
 
         # Only tweet if not recently whistled
         if not self.scheduleWhistled:
-            self.whistleTweet(text)
-            #self.whistlePrint(text) # For testing
+            if Constants.debugDoNotTweet:
+                self.whistlePrint(text)  # For testing
+            else:
+                self.whistleTweet(text)
         else:
             return
 
@@ -368,14 +336,14 @@ class Whistler:
     def start(self):
 
         # Allow time for system to come up
-        sleep(self.startupDelay)
-        self.dt = datetime.now(self.tz)
-        self.DM("Wetting whistle... @ {0}".format(self.dt.strftime(self.dtFormat)))
+        sleep(Constants.startupDelay)
+        self.dt = datetime.now(Constants.tz)
+        self.DM("[{0}] Wetting whistle... @ {1}".format(Constants.versionNumber, self.dt.strftime(Constants.dtFormat)))
 
         try:
-            while(1):
+            while 1:
                 # Get current date and time (where the whistle is)
-                self.dt = datetime.now(self.tz)
+                self.dt = datetime.now(Constants.tz)
                 
                 # If first check of a new day, run daily check
                 if self.curDay is not self.dt.weekday():
@@ -385,16 +353,16 @@ class Whistler:
                 # If When The Whistle Blows day
                 if self.wtwbToday:
                     # If near WTWB time
-                    if 0 <= self.dt.hour - self.wtwbTime['hour'] <= self.silenceBeforeWTWB:
+                    if 0 <= self.dt.hour - self.wtwbTime['hour'] <= Constants.silenceBeforeWTWB:
                         # If exactly time
                         if self.dt.hour is self.wtwbTime['hour'] and \
                            self.dt.minute is self.wtwbTime['minute']:
                             self.wtwbFirstWhistle()
 
-                            sleep(self.wtwbTime['delay'] * self.secPerMin) # Delay for approximate length of ceremony
+                            sleep(self.wtwbTime['delay'] * Constants.secPerMin) # Delay for approximate length of ceremony
                             self.wtwbSecondWhistle()
 
-                            sleep(self.minPerHour * self.secPerMin) # Remain quiet after ceremony
+                            sleep(Constants.minPerHour * Constants.secPerMin) # Remain quiet after ceremony
                             self.wtwbToday = False
                             continue
                         # If near but not exactly time, wait until then
@@ -407,6 +375,7 @@ class Whistler:
                 # If football game today
                 if self.GAMEDAY:
                     # TODO
+                    Football.checkIfGameStarted()
                     continue
 
                 curTime = { "hour": self.dt.hour, "minute": self.dt.minute }
@@ -427,12 +396,5 @@ class Whistler:
 # --- EXECUTION ---
 # -----------------
 
-# Custom file for authentication data not to be shared publicly
-twitterConfigFile   = "myConfig.json"
-# Custom file for holding all of the scheduled times the whistle should sound
-scheduleConfigFile  = "schedule.json"
-# File for holding logs of program behavior and actions
-logFile             = "GTW_log.txt"
-
-GTWhistle = Whistler(twitterConfigFile, scheduleConfigFile, logFile)
+GTWhistle = Whistler(Constants.APIConfigFile, Constants.scheduleConfigFile, Constants.logFile)
 GTWhistle.start()
