@@ -1,0 +1,98 @@
+[
+    {
+        "AwayTeamName": "Georgia Tech Yellow Jackets",
+        "DateTime": "2016-09-03T07:30:00",
+        "GameID": 100,
+        "HomeTeam": "BOSCOL",
+        "HomeTeamName": "Boston College Eagles",
+        "AwayTeam": "GTECH"
+    },
+    {
+        "AwayTeamName": "Mercer Bears",
+        "DateTime": "2016-09-10T15:00:00",
+        "GameID": 180,
+        "HomeTeam": "GTECH",
+        "HomeTeamName": "Georgia Tech Yellow Jackets",
+        "AwayTeam": "MERC"
+    },
+    {
+        "AwayTeamName": "Vanderbilt Commodores",
+        "DateTime": "2016-09-17T12:30:00",
+        "GameID": 246,
+        "HomeTeam": "GTECH",
+        "HomeTeamName": "Georgia Tech Yellow Jackets",
+        "AwayTeam": "VAND"
+    },
+    {
+        "AwayTeamName": "Clemson Tigers",
+        "DateTime": "2016-09-22T19:30:00",
+        "GameID": 294,
+        "HomeTeam": "GTECH",
+        "HomeTeamName": "Georgia Tech Yellow Jackets",
+        "AwayTeam": "CLMSN"
+    },
+    {
+        "AwayTeamName": "Miami Hurricanes",
+        "DateTime": "2016-10-01T12:00:00",
+        "GameID": 386,
+        "HomeTeam": "GTECH",
+        "HomeTeamName": "Georgia Tech Yellow Jackets",
+        "AwayTeam": "MIA"
+    },
+    {
+        "AwayTeamName": "Georgia Tech Yellow Jackets",
+        "DateTime": "2016-10-08T12:30:00",
+        "GameID": 417,
+        "HomeTeam": "PITT",
+        "HomeTeamName": "Pittsburgh Panthers",
+        "AwayTeam": "GTECH"
+    },
+    {
+        "AwayTeamName": "Georgia Southern Eagles",
+        "DateTime": null,
+        "GameID": 490,
+        "HomeTeam": "GTECH",
+        "HomeTeamName": "Georgia Tech Yellow Jackets",
+        "AwayTeam": "GAS"
+    },
+    {
+        "AwayTeamName": "Duke Blue Devils",
+        "DateTime": null,
+        "GameID": 599,
+        "HomeTeam": "GTECH",
+        "HomeTeamName": "Georgia Tech Yellow Jackets",
+        "AwayTeam": "DUKE"
+    },
+    {
+        "AwayTeamName": "Georgia Tech Yellow Jackets",
+        "DateTime": null,
+        "GameID": 636,
+        "HomeTeam": "NCAR",
+        "HomeTeamName": "North Carolina Tar Heels",
+        "AwayTeam": "GTECH"
+    },
+    {
+        "AwayTeamName": "Georgia Tech Yellow Jackets",
+        "DateTime": null,
+        "GameID": 686,
+        "HomeTeam": "VTECH",
+        "HomeTeamName": "Virginia Tech Hokies",
+        "AwayTeam": "GTECH"
+    },
+    {
+        "AwayTeamName": "Virginia Cavaliers",
+        "DateTime": null,
+        "GameID": 772,
+        "HomeTeam": "GTECH",
+        "HomeTeamName": "Georgia Tech Yellow Jackets",
+        "AwayTeam": "VIR"
+    },
+    {
+        "AwayTeamName": "Georgia Tech Yellow Jackets",
+        "DateTime": null,
+        "GameID": 823,
+        "HomeTeam": "GA",
+        "HomeTeamName": "Georgia Bulldogs",
+        "AwayTeam": "GTECH"
+    }
+]
