@@ -111,3 +111,7 @@ class GamedayPhase(Enum):
     gameOn        = 4
     gameEnds      = 5
     postGame      = 6
+
+APIdata_ugaTeam        = "GA"
+#APIdata_ugaTeamName    = "Georgia Bulldogs" # (sic)
+thwg                   = "(THWg)"

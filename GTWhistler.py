@@ -236,12 +236,39 @@ class Whistler:
 
         return text
 
+    def generateFootballWhistleText(self, score, oppTeam):
+        # Fill out text
+        text = ""
+        for index in range(SsDefault):
+            text += "s"
+        for index in range(HsDefault):
+            text += "h"
+        text += "vr"
+        for index in range(LowEsDefault):
+            text += "e"
+        for index in range(score if score > HighEsDefault else HighEsDefault):
+            text += "E"
+
+        # Yes, I completely lack maturity
+        if oppTeam == APIdata_ugaTeam:
+            text += "O" + thwg + "O"
+        else:
+            for index in range(HighOsDefault):
+                text += "O"
+
+        for index in range(LowOsDefault):
+            text += "o"
+        text += "w"
+
+        return text
+
     def isWhistleTextValid(self, text):
         # Ensure the text does not exceed 140 characters
         # Note: no support for interpreting links
         # as taking up fewer characters
         if len(text) > twitterCharLimit:
-            return False
+            # Truncate text to fit (better than quitting entirely!)
+            text = text[0:twitterCharLimit]
 
         # Compare text against past tweets to avoid duplicates
         # (which will not be tweeted as per Twitter rules)
