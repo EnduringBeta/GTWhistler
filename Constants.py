@@ -2,6 +2,7 @@
 
 import logging
 from pytz import timezone
+from enum import Enum
 
 # Project constants
 versionNumber        = "v1.0.1"
@@ -28,13 +29,13 @@ secPerMin            = 60
 minPerHour           = 60
 maxHour              = 24
 lastHour             = 23
-minHour              = 0
+minHour              =  0
 maxMinute            = 60
 lastMinute           = 59
-minMinute            = 0
+minMinute            =  0
 maxSecond            = 60
 lastSecond           = 59
-minSecond            = 0
+minSecond            =  0
 
 # Whistle string constants
 defaultWhistleText   = "shhvreeeEEEEEEEEEEOOOOOooow"
@@ -86,6 +87,7 @@ APIboxscore        = "BoxScore/"
 APIschedule        = "Games/"
 APIgamesinprogress = "AreAnyGamesInProgress"
 
+APIfield_Game          = "Game"
 APIfield_GameID        = "GameID"
 APIfield_DateTime      = "DateTime"
 APIfield_AwayTeam      = "AwayTeam"
@@ -97,4 +99,14 @@ APIfield_HomeTeamScore = "HomeTeamScore"
 APIfield_Period        = "Period"
 
 APIdata_GTTeam         = "GTECH"
-APIdata_GTTeamName     = "Georgia Tech Yellow Jackets"
+#APIdata_GTTeamName     = "Georgia Tech Yellow Jackets"
+
+# Gameday constants
+class GamedayPhase(Enum):
+    notGameday    = 0
+    earlyGameday  = 1
+    preGame       = 2
+    toeHitLeather = 3
+    gameOn        = 4
+    gameEnds      = 5
+    postGame      = 6

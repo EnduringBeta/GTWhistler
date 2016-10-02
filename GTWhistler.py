@@ -12,81 +12,74 @@ from twitter import *
 # For configuration reading
 # (Thanks: http://stackoverflow.com/questions/2835559/parsing-values-from-a-json-file-in-python)
 import json
-
 from datetime import datetime
 from time import sleep
 from random import randint
 from sys import stdout
-import logging
 
+from Constants import *
+import Utils
 import Football
-import Constants
 
 class Whistler:
-    """Class that holds functionality for processing conditions to tweet as @GTWhistle twitter account"""
+    """Class that holds functionality for processing
+    conditions to tweet as @GTWhistle twitter account"""
 
     # ---------------
     # --- Members ---
     # ---------------
 
-    APIConfigFile       = None
-    scheduleConfigFile  = None
-    logFile             = None
-    APIConfig           = None
-    scheduleConfig      = None
-    log                 = None
-    t                   = None
+    APIConfig            = None
+    scheduleConfig       = None
+    log                  = None
+    t                    = None
 
-    dt                  = None
+    dt                   = None
 
-    dailySchedule       = None
-    scheduleWhistled    = False
-    prevTweets          = None
+    dailySchedule        = None
+    scheduleWhistled     = False
+    prevTweets           = None
 
-    wtwbToday           = False
-    wtwbTime            = None
-    GAMEDAY             = False
+    wtwbToday            = False
+    wtwbTime             = None
+    GAMEDAY              = False
 
-    curDay              = None
+    curDay               = None
+
+    gamedayPhase         = GamedayPhase.notGameday
 
     # ---------------------
     # --- SETUP METHODS ---
     # ---------------------
 
-    def __init__(self, APIFileInput, scheduleFileInput, logFileInput):
-        self.APIConfigFile  = APIFileInput
-        self.scheduleConfigFile = scheduleFileInput
-        self.logFile            = logFileInput
+    def __init__(self):
 
         # Get current date and time (where the whistle is)
-        self.dt = datetime.now(Constants.tz)
+        self.dt = datetime.now(tz)
 
         if not self.fullSetup(): # If any setup did not succeed
-            self.processException("Error during initialization setup!")
+            self.whistlerError("Error during initialization setup!")
             return
 
         # Load schedule
         self.curDay = self.dt.weekday()
         self.dailySchedule = self.scheduleConfig['regularSchedule'][self.curDay]
 
-    def processException(self, text):
-        logging.error(text)
-        self.directMessageOnError(text)
-        sleep(Constants.errorDelay * Constants.secPerMin) # Do nothing for a while to prevent spammy worst-case scenarios
+    def fullSetup(self):
+        setupSuccess = self.twitterSetup()
+        setupSuccess = self.scheduleSetup() and setupSuccess
+        setupSuccess = self.logSetup() and setupSuccess
+        setupSuccess = Football.updateFootballSchedule(self.dt.year, APIdata_GTTeam) and setupSuccess
 
-    def directMessageOnError(self, errorText):
-        if self.t is not None and \
-           self.APIConfig is not None and \
-           self.APIConfig['owner_username'] is not None:
-            self.DM(errorText)
+        return setupSuccess
 
     def twitterSetup(self):
         try:
-            with open(self.APIConfigFile, encoding='utf-8') as dataFile:
+            with open(APIConfigFile, encoding='utf-8') as dataFile:
                 self.APIConfig = json.loads(dataFile.read())
         except Exception as e:
             errorStr = "Error when loading configuration: " + str(e)
-            self.processException(errorStr)
+            self.whistlerError(errorStr)
             return False # If error during setup, stop running
 
         try:
@@ -97,51 +90,54 @@ class Whistler:
                 token_secret    =   self.APIConfig["access_token_secret"]))
         except Exception as e:
             errorStr = "Error when authenticating with Twitter: " + str(e)
-            self.processException(errorStr)
+            self.whistlerError(errorStr)
             return False # If error during setup, stop running
 
         return True
 
     def scheduleSetup(self):
         try:
-            with open(self.scheduleConfigFile, encoding='utf-8') as dataFile:
+            with open(scheduleConfigFile, encoding='utf-8') as dataFile:
                 self.scheduleConfig = json.loads(dataFile.read())
         except Exception as e:
             errorStr = "Error when loading schedule: " + str(e)
-            self.processException(errorStr)
+            self.whistlerError(errorStr)
             return False # If error during setup, stop running
 
         return True
 
-    def logFileSetup(self):
-        try:
-            logging.basicConfig(
-                filename=self.logFile,
-                level=Constants.logLevel,
-                format='%(asctime)s: %(message)s')
+    def logSetup(self):
+        retStr = Utils.logFileSetup()
+        if retStr == "":
             logging.info("GTWhistler Log File Started")
-        except Exception as e:
-            errorStr = "Error when setting up log file: " + str(e)
-            self.processException(errorStr)
+            return True
+        else:
+            self.whistlerError("Error when setting up log file: " + retStr)
             return False # If error during setup, stop running
 
-        return True
+    # ------------------------------
+    # --- ERROR HANDLING METHODS ---
+    # ------------------------------
 
-    def fullSetup(self):
-        successful = self.twitterSetup()
-        successful = self.scheduleSetup() and successful
-        successful = self.logFileSetup() and successful
+    def whistlerError(self, text):
+        logging.error(text)
+        self.directMessageOnError(text)
+        sleep(errorDelay * secPerMin) # Do nothing for a while to prevent spammy worst-case scenarios
 
-        return successful
+    def directMessageOnError(self, errorText):
+        if self.t is not None and \
+           self.APIConfig is not None and \
+           self.APIConfig['owner_username'] is not None:
+            self.DM(errorText)
 
-    # -----
-    # Setup
-    # -----
+    # ----------------------
+    # --- TIMING METHODS ---
+    # ----------------------
 
     def dailyCheck(self):
 
         if not self.fullSetup(): # If any setup did not succeed
-            self.processException("Error during daily check setup!")
+            self.whistlerError("Error during daily check setup!")
             return False
 
         self.curDay = self.dt.weekday()
@@ -167,8 +163,8 @@ class Whistler:
 
     # Ignores special day considerations
     def getNextScheduledWhistle(self):
-        nextTime = { "hour": Constants.maxHour, "minute": Constants.minMinute }
-        self.dt = datetime.now(Constants.tz)
+        nextTime = { "hour": maxHour, "minute": minMinute }
+        self.dt = datetime.now(tz)
         # For every time on the schedule today
         for time in self.dailySchedule:
             # If scheduled time is in the future
@@ -184,10 +180,10 @@ class Whistler:
         return nextTime
 
     def sleepUntil(self, nextTime):
-        self.dt = datetime.now(Constants.tz)
-        secToNextTime = (nextTime['hour']    - self.dt.hour  ) * Constants.minPerHour * Constants.secPerMin + \
-                        (nextTime['minute']  - self.dt.minute) * Constants.secPerMin  + \
-                        (Constants.minSecond - self.dt.second)
+        self.dt = datetime.now(tz)
+        secToNextTime = (nextTime['hour']    - self.dt.hour  ) * minPerHour * secPerMin + \
+                        (nextTime['minute']  - self.dt.minute) * secPerMin  + \
+                        (minSecond - self.dt.second)
                         # Find time difference to calculate total sleep time.
                         # If no more scheduled times, calculation based on 24h:00m for daily check.
                         # Next time should always be beginning of minute, so subtract off
@@ -199,23 +195,27 @@ class Whistler:
             sleep(secToNextTime) # Sleep until next time
         except Exception as e:
             errorStr = "Error when trying to sleep: " + str(e)
-            self.processException(errorStr)
+            self.whistlerError(errorStr)
+
+    # ----------------------
+    # --- STRING METHODS ---
+    # ----------------------
 
     @staticmethod
     def generateRandomWhistleText():
         # Calculate randomized numbers of letters
-        numSs     = randint(Constants.SsDefault     - Constants.SsDelta,
-                            Constants.SsDefault     + Constants.SsDelta)
-        numHs     = randint(Constants.HsDefault     - Constants.HsDelta,
-                            Constants.HsDefault     + Constants.HsDelta)
-        numLowEs  = randint(Constants.LowEsDefault  - Constants.LowEsDelta,
-                            Constants.LowEsDefault  + Constants.LowEsDelta)
-        numHighEs = randint(Constants.HighEsDefault - Constants.HighEsDelta,
-                            Constants.HighEsDefault + Constants.HighEsDelta)
-        numHighOs = randint(Constants.HighOsDefault - Constants.HighOsDelta,
-                            Constants.HighOsDefault + Constants.HighOsDelta)
-        numLowOs  = randint(Constants.LowOsDefault  - Constants.LowOsDelta,
-                            Constants.LowOsDefault  + Constants.LowOsDelta)
+        numSs     = randint(SsDefault     - SsDelta,
+                            SsDefault     + SsDelta)
+        numHs     = randint(HsDefault     - HsDelta,
+                            HsDefault     + HsDelta)
+        numLowEs  = randint(LowEsDefault  - LowEsDelta,
+                            LowEsDefault  + LowEsDelta)
+        numHighEs = randint(HighEsDefault - HighEsDelta,
+                            HighEsDefault + HighEsDelta)
+        numHighOs = randint(HighOsDefault - HighOsDelta,
+                            HighOsDefault + HighOsDelta)
+        numLowOs  = randint(LowOsDefault  - LowOsDelta,
+                            LowOsDefault  + LowOsDelta)
 
         # Fill out text
         text = ""
@@ -249,7 +249,7 @@ class Whistler:
         # Get previous tweets for later comparisons of time and text
         self.prevTweets = self.t.statuses.user_timeline(
                             screen_name=self.APIConfig['bot_username'],
-                            count=Constants.numTweetsCompare)
+                            count=numTweetsCompare)
 
         potentialText = ""
         validTextFound = False
@@ -276,12 +276,12 @@ class Whistler:
         # Confirm it has been at least a few minutes since the last tweet
         # Could be necessary if program started and stopped within 1 minute
         lastTweetTime = datetime.strptime(self.prevTweets[0]['created_at'],
-                                          Constants.dtFormatTwitter) \
-                                           .astimezone(Constants.tz)
+                                          dtFormatTwitter) \
+                                           .astimezone(tz)
 
         secSinceLastTweet = (self.dt - lastTweetTime).seconds
-        if 0 <= secSinceLastTweet <= Constants.minTweetTimeDelta * Constants.secPerMin:
-            sleep((Constants.minTweetTimeDelta * Constants.secPerMin) - secSinceLastTweet)
+        if 0 <= secSinceLastTweet <= minTweetTimeDelta * secPerMin:
+            sleep((minTweetTimeDelta * secPerMin) - secSinceLastTweet)
             return
 
         # Otherwise, tweet!
@@ -289,9 +289,9 @@ class Whistler:
             self.t.statuses.update(status=text)
         except Exception as e:
             errorStr = "Error when tweeting: " + text + " (" + str(e) + ")"
-            self.processException(errorStr)
+            self.whistlerError(errorStr)
         else:
-            printStr = "Whistled: {0} @ {1}".format(text, self.dt.strftime(Constants.dtFormat))
+            printStr = "Whistled: {0} @ {1}".format(text, self.dt.strftime(dtFormat))
             logging.info(printStr)
 
             self.scheduleWhistled = True
@@ -299,7 +299,7 @@ class Whistler:
     # Method primarily for debugging
     # Note that this does not follow the restriction of only one message per 5 minutes
     def whistlePrint(self, text):
-        printStr = "Whistled: {0} @ {1}".format(text, self.dt.strftime(Constants.dtFormat))
+        printStr = "Whistled: {0} @ {1}".format(text, self.dt.strftime(dtFormat))
         print(printStr)
         stdout.flush()
         logging.info(printStr)
@@ -312,7 +312,7 @@ class Whistler:
 
         # Only tweet if not recently whistled
         if not self.scheduleWhistled:
-            if Constants.debugDoNotTweet:
+            if debugDoNotTweet:
                 self.whistlePrint(text)  # For testing
             else:
                 self.whistleTweet(text)
@@ -321,7 +321,8 @@ class Whistler:
 
     # TODO: Add reminder dates that send out DM to owner to update WTWB and football dates
     def wtwbFirstWhistle(self):
-        self.whistleTweet("(When The Whistle Blows is a memorial service taking place today to honor those lost from the Georgia Tech community this year.)")
+        self.whistleTweet("(When The Whistle Blows is a memorial service taking place"
+                          "today to honor those lost from the Georgia Tech community this year.)")
 
     def wtwbSecondWhistle(self):
         self.whistleTweet("(In memoriam) " + self.createWhistleText())
@@ -336,14 +337,14 @@ class Whistler:
     def start(self):
 
         # Allow time for system to come up
-        sleep(Constants.startupDelay)
-        self.dt = datetime.now(Constants.tz)
-        self.DM("[{0}] Wetting whistle... @ {1}".format(Constants.versionNumber, self.dt.strftime(Constants.dtFormat)))
+        sleep(startupDelay)
+        self.dt = datetime.now(tz)
+        self.DM("[{0}] Wetting whistle... @ {1}".format(versionNumber, self.dt.strftime(dtFormat)))
 
         try:
             while 1:
                 # Get current date and time (where the whistle is)
-                self.dt = datetime.now(Constants.tz)
+                self.dt = datetime.now(tz)
                 
                 # If first check of a new day, run daily check
                 if self.curDay is not self.dt.weekday():
@@ -353,16 +354,17 @@ class Whistler:
                 # If When The Whistle Blows day
                 if self.wtwbToday:
                     # If near WTWB time
-                    if 0 <= self.dt.hour - self.wtwbTime['hour'] <= Constants.silenceBeforeWTWB:
+                    if 0 <= self.dt.hour - self.wtwbTime['hour'] <= silenceBeforeWTWB:
                         # If exactly time
                         if self.dt.hour is self.wtwbTime['hour'] and \
                            self.dt.minute is self.wtwbTime['minute']:
                             self.wtwbFirstWhistle()
 
-                            sleep(self.wtwbTime['delay'] * Constants.secPerMin) # Delay for approximate length of ceremony
+                            # Delay for approximate length of ceremony
+                            sleep(self.wtwbTime['delay'] * secPerMin)
                             self.wtwbSecondWhistle()
 
-                            sleep(Constants.minPerHour * Constants.secPerMin) # Remain quiet after ceremony
+                            sleep(minPerHour * secPerMin) # Remain quiet after ceremony
                             self.wtwbToday = False
                             continue
                         # If near but not exactly time, wait until then
@@ -375,7 +377,7 @@ class Whistler:
                 # If football game today
                 if self.GAMEDAY:
                     # TODO
-                    Football.checkIfGameStarted()
+                    #Football.getLatestScores()
                     continue
 
                 curTime = { "hour": self.dt.hour, "minute": self.dt.minute }
@@ -390,11 +392,11 @@ class Whistler:
                     
         except Exception as e:
             errorStr = "Error during loop: " + str(e)
-            self.processException(errorStr)
+            self.whistlerError(errorStr)
 
 # -----------------
 # --- EXECUTION ---
 # -----------------
 
-GTWhistle = Whistler(Constants.APIConfigFile, Constants.scheduleConfigFile, Constants.logFile)
+GTWhistle = Whistler()
 GTWhistle.start()

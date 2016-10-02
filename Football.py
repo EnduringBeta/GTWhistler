@@ -2,9 +2,8 @@
 # using an online API.
 
 # Example API code taken from devloper.fantasydata.com
-import http.client, urllib.request, urllib.parse, urllib.error, base64
+import http.client, urllib.parse, urllib.error
 import json
-import logging
 
 from Constants import *
 
@@ -44,13 +43,14 @@ def updateFootballSchedule(year, team):
     for game in fullSchedule:
         if  game[APIfield_AwayTeam] == team or \
             game[APIfield_HomeTeam] == team:
-            newGame = {}
-            newGame[APIfield_GameID]       = game[APIfield_GameID]
-            newGame[APIfield_DateTime]     = game[APIfield_DateTime]
-            newGame[APIfield_AwayTeam]     = game[APIfield_AwayTeam]
-            newGame[APIfield_HomeTeam]     = game[APIfield_HomeTeam]
-            newGame[APIfield_AwayTeamName] = game[APIfield_AwayTeamName]
-            newGame[APIfield_HomeTeamName] = game[APIfield_HomeTeamName]
+            newGame = {
+                APIfield_GameID:       game[APIfield_GameID],
+                APIfield_DateTime:     game[APIfield_DateTime],
+                APIfield_AwayTeam:     game[APIfield_AwayTeam],
+                APIfield_HomeTeam:     game[APIfield_HomeTeam],
+                APIfield_AwayTeamName: game[APIfield_AwayTeamName],
+                APIfield_HomeTeamName: game[APIfield_HomeTeamName]
+            }
             scheduleGT.append(newGame)
 
     # Write schedule to log and to file for later use
@@ -73,11 +73,14 @@ def readFootballSchedule():
         logging.error("Failure to read football schedule from file: " + str(e))
         return None
 
-# -----------------
-# --- EXECUTION ---
-# -----------------
+def getLatestScores(gameID):
+    # Convert gameID if not string
+    if isinstance(gameID, int):
+        gameID = str(gameID)
 
-# Testing
-updateHeaders("")
-updateFootballSchedule("2016", APIdata_GTTeam)
-readFootballSchedule()
+    gameData = readFootballAPI(APIstatspath, APIboxscore + gameID)
+    # Retrieving one game entry, so first and only in array
+    gameScores = { gameData[0][APIfield_Game][APIfield_AwayTeamScore],
+                   gameData[0][APIfield_Game][APIfield_HomeTeamScore] }
+
+    return gameScores
