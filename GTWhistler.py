@@ -253,15 +253,13 @@ class Whistler:
                          config_minute: self.wtwbTime[config_minute]})
 
         # At beginning of ceremony
-        self.whistleTweet("(When The Whistle Blows is a memorial service"
-                          "taking place today to honor those lost"
-                          "from the Georgia Tech community this year.)")
+        self.whistleTweet(wtwb_explanation)
 
         # Delay for approximate length of ceremony
         sleep(self.wtwbTime[config_delay] * secPerMin)
 
         # ...Before tweeting in memoriam
-        self.whistleTweet("(In memoriam) " + self.createWhistleText())
+        self.whistleTweet(self.createValidRandomWhistleText(wtwb_inMemoriam))
 
         # Remain quiet after ceremony
         self.sleepUntil(self.getMidnight())
@@ -359,7 +357,7 @@ class Whistler:
 
         return True
 
-    def createWhistleText(self):
+    def createValidRandomWhistleText(self, prefixString=""):
         # Get previous tweets for later comparisons of time and text
         self.prevTweets = self.t.statuses.user_timeline(
                             screen_name=self.APIConfig[config_botUsername],
@@ -370,7 +368,7 @@ class Whistler:
 
         while not validTextFound:
             # Generate tweet text
-            potentialText = self.generateRandomWhistleText()
+            potentialText = prefixString + self.generateRandomWhistleText()
             # Check if text is new
             validTextFound = self.isWhistleTextValid(potentialText)
 
@@ -423,15 +421,12 @@ class Whistler:
         self.scheduleWhistled = True
 
     def scheduledWhistle(self):
-        # Create text to tweet
-        text = self.createWhistleText()
-
         # Only tweet if not recently whistled
         if not self.scheduleWhistled:
             if debugDoNotTweet:
-                self.whistlePrint(text)  # For testing
+                self.whistlePrint(self.createValidRandomWhistleText()) # For testing
             else:
-                self.whistleTweet(text)
+                self.whistleTweet(self.createValidRandomWhistleText())
         else:
             return
 
@@ -440,8 +435,9 @@ class Whistler:
     # ----------------------------
 
     def start(self):
-        self.dt = datetime.now(tz)
-        self.DM("[{0}] Wetting whistle... @ {1}".format(versionNumber, self.dt.strftime(dtFormat)))
+        self.DM("[{0}] Wetting whistle... @ {1}"
+                .format(versionNumber,
+                        datetime.now(tz).strftime(dtFormat)))
 
         try:
             while 1:

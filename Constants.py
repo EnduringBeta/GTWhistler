@@ -94,6 +94,10 @@ debugDoNotTweet      = True # While in development, this Boolean prevents the
                             # account from tweeting, instead printing on the
                             # machine to confirm proper output.
 
+# WTWB string constants
+wtwb_explanation = "(When The Whistle Blows is a memorial service taking place today to honor those lost from the Georgia Tech community this year.)"
+wtwb_inMemoriam  = "(In memoriam) "
+
 # Config JSON field constants
 config_ownerUsername     = "owner_username"
 config_botUsername       = "bot_username"
