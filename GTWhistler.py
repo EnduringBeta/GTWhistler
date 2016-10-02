@@ -163,7 +163,7 @@ class Whistler:
 
     # Ignores special day considerations
     def getNextScheduledWhistle(self):
-        nextTime = { "hour": maxHour, "minute": minMinute }
+        nextTime = self.getMidnight()
         self.dt = datetime.now(tz)
         # For every time on the schedule today
         for time in self.dailySchedule:
@@ -196,6 +196,31 @@ class Whistler:
         except Exception as e:
             errorStr = "Error when trying to sleep: " + str(e)
             self.whistlerError(errorStr)
+
+    @staticmethod
+    def getMidnight():
+        return { "hour": maxHour, "minute": minMinute }
+
+    # TODO: Add reminder dates that send out DM to owner to update WTWB
+    # Note: entire day is spent in this method
+    def wtwbProcessing(self):
+        # Remain silent during day until ceremony
+        self.sleepUntil({"hour": self.wtwbTime['hour'],
+                         "minute": self.wtwbTime['minute']})
+
+        # At beginning of ceremony
+        self.whistleTweet("(When The Whistle Blows is a memorial service"
+                          "taking place today to honor those lost"
+                          "from the Georgia Tech community this year.)")
+
+        # Delay for approximate length of ceremony
+        sleep(self.wtwbTime['delay'] * secPerMin)
+
+        # ...Before tweeting in memoriam
+        self.whistleTweet("(In memoriam) " + self.createWhistleText())
+
+        # Remain quiet after ceremony
+        self.sleepUntil(self.getMidnight())
 
     # ----------------------
     # --- STRING METHODS ---
@@ -352,25 +377,11 @@ class Whistler:
         else:
             return
 
-    # TODO: Add reminder dates that send out DM to owner to update WTWB and football dates
-    def wtwbFirstWhistle(self):
-        self.whistleTweet("(When The Whistle Blows is a memorial service taking place"
-                          "today to honor those lost from the Georgia Tech community this year.)")
-
-    def wtwbSecondWhistle(self):
-        self.whistleTweet("(In memoriam) " + self.createWhistleText())
-
-    def footballWhistle(self):
-        self.whistleTweet("Football!")
-
     # ----------------------------
     # --- MAIN PROCESSING LOOP ---
     # ----------------------------
 
     def start(self):
-
-        # Allow time for system to come up
-        sleep(startupDelay)
         self.dt = datetime.now(tz)
         self.DM("[{0}] Wetting whistle... @ {1}".format(versionNumber, self.dt.strftime(dtFormat)))
 
@@ -386,29 +397,10 @@ class Whistler:
 
                 # If When The Whistle Blows day
                 if self.wtwbToday:
-                    # If near WTWB time
-                    if 0 <= self.dt.hour - self.wtwbTime['hour'] <= silenceBeforeWTWB:
-                        # If exactly time
-                        if self.dt.hour is self.wtwbTime['hour'] and \
-                           self.dt.minute is self.wtwbTime['minute']:
-                            self.wtwbFirstWhistle()
-
-                            # Delay for approximate length of ceremony
-                            sleep(self.wtwbTime['delay'] * secPerMin)
-                            self.wtwbSecondWhistle()
-
-                            sleep(minPerHour * secPerMin) # Remain quiet after ceremony
-                            self.wtwbToday = False
-                            continue
-                        # If near but not exactly time, wait until then
-                        else:
-                            self.sleepUntil({ "hour":   self.wtwbTime['hour'],
-                                              "minute": self.wtwbTime['minute']
-                                            })
-                            continue
-
+                    self.wtwbProcessing()
+                    continue # Skip remaining processing
                 # If football game today
-                if self.GAMEDAY:
+                elif self.GAMEDAY:
                     # TODO
                     #Football.getLatestScores()
                     continue
@@ -430,6 +422,9 @@ class Whistler:
 # -----------------
 # --- EXECUTION ---
 # -----------------
+
+# Allow time for system to come up
+sleep(startupDelay)
 
 GTWhistle = Whistler()
 GTWhistle.start()

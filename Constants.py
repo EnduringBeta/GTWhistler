@@ -67,14 +67,13 @@ errorDelay           = 15 # minutes
 minTweetTimeDelta    = 5  # minutes
 
 # Other Whistler constants
-silenceBeforeWTWB    = 3    # Number of hours before When The Whistle Blows
-                            # that the whistle will not do scheduled whistles
 numTweetsCompare     = 5    # Number of past tweets to compare against when
                             # generating new tweet text
+twitterCharLimit     = 140  # Twitter 101 - all tweets must be <= 140 characters
+
 debugDoNotTweet      = True # While in development, this Boolean prevents the
                             # account from tweeting, instead printing on the
                             # machine to confirm proper output.
-twitterCharLimit     = 140  # Twitter 101 - all tweets must be <= 140 characters
 
 # Football API constants
 APIget        = "GET"
