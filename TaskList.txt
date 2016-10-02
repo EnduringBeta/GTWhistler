@@ -4,15 +4,13 @@ TESTING
 Test WTWB day
 
 FEATURES
-Add check for if below 140 characters (and DMs?)
 Add commencement event
-Auto-like mentions
-DM me on March 1st and July 1st to input new WTWB/football dates
+DM me on March 1st to input new WTWB
+Update football schedule on Sundays in fall semester
 
 EPICS
-Find best way to learn football game dates
-Find best way to obtain football scores automatically to whistle when GT scores
-	# O's = score?
+Check football scores on GAMEDAY to automatically whistle when GT scores
 Respond to DMs
 	Use people's suggestions? (https://www.reddit.com/r/gatech/comments/4cr5gs/how_would_you_write_in_letters_the_sound_the/)
 	Do only at whistle time?
+Auto-like mentions
