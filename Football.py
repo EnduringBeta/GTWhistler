@@ -37,6 +37,10 @@ def readFootballAPI(basePath, dataPath, params=urllib.parse.urlencode({})):
     return dataObj
 
 def updateFootballSchedule(year, team):
+    # Convert gameID if not string
+    if isinstance(year, int):
+        year = str(year)
+
     fullSchedule = readFootballAPI(APIscorespath, APIschedule + year)
     scheduleGT = []
 

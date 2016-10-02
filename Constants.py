@@ -5,7 +5,7 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v1.0.1"
+versionNumber        = "v1.0.2"
 
 # Custom file for authentication data not to be shared publicly
 APIConfigFile        = "myConfig.json"
@@ -23,7 +23,7 @@ logLevel             = logging.DEBUG
 tz                   = timezone('US/Eastern')
 dtFormat             = "%a, %d %b %Y - %H:%M:%S"
 dtFormatTwitter      = "%a %b %d %H:%M:%S %z %Y"
-dtFormatFootballAPI  = "%a-%b-%dT%H:%M:%S"
+dtFormatFootballAPI  = "%Y-%m-%dT%H:%M:%S"
 
 # Time constants
 secPerMin            = 60
@@ -54,6 +54,7 @@ HighOsDelta          =  2
 LowOsDelta           =  2
 
 # Weekday constants
+# (Only used for football scheduling)
 class Weekday(Enum):
     Monday           = 0
     Tuesday          = 1
@@ -64,6 +65,7 @@ class Weekday(Enum):
     Sunday           = 6
 
 # Month constants
+# (Only used for football scheduling)
 class Month(Enum):
     January          =  1
     February         =  2
@@ -91,6 +93,31 @@ twitterCharLimit     = 140  # Twitter 101 - all tweets must be <= 140 characters
 debugDoNotTweet      = True # While in development, this Boolean prevents the
                             # account from tweeting, instead printing on the
                             # machine to confirm proper output.
+
+# Config JSON field constants
+config_ownerUsername     = "owner_username"
+config_botUsername       = "bot_username"
+config_consumerKey       = "consumer_key"
+config_consumerSecret    = "consumer_secret"
+config_accessToken       = "access_token"
+config_accessTokenSecret = "access_token_secret"
+config_fantasyDataKey    = "fantasy_data_key"
+
+# Schedule JSON field constants
+config_regularSchedule   = "regularSchedule"
+config_WTWB              = "WTWB"
+
+# Generic JSON field constants
+config_year              = "year"
+config_month             = "month"
+config_day               = "day"
+config_hour              = "hour"
+config_minute            = "minute"
+config_delay             = "delay"
+
+# Twitter API field constants
+APIfield_TweetText      = "text"
+APIfield_TweetTimestamp = "created_at"
 
 # Football API constants
 APIget        = "GET"
@@ -122,8 +149,10 @@ APIdata_GTTeam         = "GTECH"
 footballSeasonMonths = [Month.August,
                         Month.September,
                         Month.October,
-                        Month.November]
-updateDay         = Weekday.Sunday
+                        Month.November,
+                        Month.December]
+
+updateWeekday        = Weekday.Sunday
 
 # Gameday constants
 class GamedayPhase(Enum):
