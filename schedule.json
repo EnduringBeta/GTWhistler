@@ -80,12 +80,30 @@
         ]
     ],
     "WTWB": {
-        "_comment": "When The Whistle Blows is a memorial service for Georgia Tech community deaths. It occurs once a year.",
-        "year":     2016,
-        "month":    4,
-        "day":      11,
-        "hour":     17,
-        "minute":   15,
-        "delay":    30
+        "event": {
+            "_comment": "When The Whistle Blows is a memorial service for Georgia Tech community deaths. It occurs once a year.",
+            "year": 2016,
+            "month": 4,
+            "day": 11,
+            "hour": 17,
+            "minute": 15,
+            "delay": 30
+        },
+        "reminder": {
+            "_comment": "On this date a direct message is sent to the owner to remind them to update this file with that year's WTWB date.",
+            "month": 3,
+            "day": 1
+        }
+    },
+    "football": {
+        "_comment": "During these months (Aug-Dec) on that day of the week (Sunday), update the football schedule."
+        "updateMonths": [
+            8,
+            9,
+            10,
+            11,
+            12
+        ],
+        "updateWeekday": 6
     }
 }

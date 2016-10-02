@@ -151,6 +151,8 @@ class Whistler:
 
         self.setWeekdayAndLoadSchedule()
 
+        self.remindIfWTWBReminderDay()
+
         self.checkIfWTWBDay()
 
         self.updateIfFootballScheduleUpdateDay()
@@ -172,21 +174,28 @@ class Whistler:
         self.curDay = self.dt.weekday()
         self.dailySchedule = self.scheduleConfig[config_regularSchedule][self.curDay]
 
+    # Sent at midnight the night before because of when daily check occurs
+    def remindIfWTWBReminderDay(self):
+        if self.isDTThisDate(self.dt.year, # Same every year, so not stored. Cheating!
+                             self.scheduleConfig[config_WTWB][config_WTWBreminder][config_month],
+                             self.scheduleConfig[config_WTWB][config_WTWBreminder][config_day]):
+            self.DM(wtwb_reminder)
+
     # Check if day of WTWB (http://www.specialevents.gatech.edu/our-events/when-whistle-blows)
     def checkIfWTWBDay(self):
-        self.wtwbTime = self.scheduleConfig[config_WTWB]
-        # TODO: Check if "is" is a good idea when used in code. Could be wrong!
+        self.wtwbTime = self.scheduleConfig[config_WTWB][config_WTWBevent]
+        # TODO: Check on is vs ==. Could be wrong!
         # Note: I have never seen this work properly yet.
-        if self.dt.year  is self.wtwbTime[config_year]  and \
-           self.dt.month is self.wtwbTime[config_month] and \
-           self.dt.day   is self.wtwbTime[config_day]:
+        if self.isDTThisDate(self.wtwbTime[config_year],
+                             self.wtwbTime[config_month],
+                             self.wtwbTime[config_day]):
             self.wtwbToday = True
 
     # TODO: Test this
     def updateIfFootballScheduleUpdateDay(self):
         # TODO: Test this
-        if Month(self.dt.month) in footballSeasonMonths and \
-           Weekday(self.curDay) is updateWeekday:
+        if self.dt.month in self.scheduleConfig[config_football][config_updateMonths] and \
+           self.curDay is self.scheduleConfig[config_football][config_updateWeekday]:
             Football.updateFootballSchedule(self.dt.year, APIdata_GTTeam)
 
     # TODO: Test this on gameday
@@ -212,10 +221,9 @@ class Whistler:
         # For every time on the schedule today
         for time in self.dailySchedule:
             # If scheduled time is in the future
-            if time[config_hour] > self.dt.hour or \
-                   (time[config_hour]   is self.dt.hour and
-                    time[config_minute] >  self.dt.minute):
+            if self.isDTBeforeThisTime(time[config_hour], time[config_minute]):
                 # If scheduled time is sooner than working time
+                # TODO: Is is right here?
                 if time[config_hour] < nextTime[config_hour] or \
                        (time[config_hour]   is nextTime[config_hour] and
                         time[config_minute] <  nextTime[config_minute]):
@@ -245,24 +253,55 @@ class Whistler:
     def getMidnight():
         return { config_hour: maxHour, config_minute: minMinute }
 
+    def isDTBeforeThisTime(self, hour, minute):
+        return self.dt.hour   < hour  or \
+               self.dt.hour  == hour and \
+               self.dt.minute < minute
+
+    def isDTThisDate(self, year, month, day):
+        return self.dt.year  == year  and \
+               self.dt.month == month and \
+               self.dt.day   == day
+
     # TODO: Add reminder dates that send out DM to owner to update WTWB
     # Note: entire day is spent in this method
     def wtwbProcessing(self):
-        # Remain silent during day until ceremony
-        self.sleepUntil({config_hour: self.wtwbTime[config_hour],
-                         config_minute: self.wtwbTime[config_minute]})
+        # Note: like most methods, this assumes "dt" is current
+        if self.isDTBeforeThisTime(self.wtwbTime[config_hour], self.wtwbTime[config_minute]):
+            # Remain silent during day until ceremony
+            self.sleepUntil({config_hour: self.wtwbTime[config_hour],
+                             config_minute: self.wtwbTime[config_minute]})
 
-        # At beginning of ceremony
-        self.whistleTweet(wtwb_explanation)
+            # At beginning of ceremony
+            self.whistleTweet(wtwb_explanation)
 
-        # Delay for approximate length of ceremony
-        sleep(self.wtwbTime[config_delay] * secPerMin)
+            # Delay for approximate length of ceremony
+            sleep(self.wtwbTime[config_delay] * secPerMin)
 
-        # ...Before tweeting in memoriam
-        self.whistleTweet(self.createValidRandomWhistleText(wtwb_inMemoriam))
+            # ...Before tweeting in memoriam
+            self.whistleTweet(self.createValidRandomWhistleText(wtwb_inMemoriam))
 
-        # Remain quiet after ceremony
+        # Remain quiet after ceremony (or if booted during ceremony)
         self.sleepUntil(self.getMidnight())
+
+    def gamedayProcessing(self):
+        if self.GAMEDAYPhase is GamedayPhase.notGameday:
+            return
+        elif self.GAMEDAYPhase is GamedayPhase.earlyGameday:
+            return
+        elif self.GAMEDAYPhase is GamedayPhase.preGame:
+            return
+        elif self.GAMEDAYPhase is GamedayPhase.toeHitLeather:
+            return
+        elif self.GAMEDAYPhase is GamedayPhase.gameOn:
+            return
+        elif self.GAMEDAYPhase is GamedayPhase.gameEnds:
+            return
+        elif self.GAMEDAYPhase is GamedayPhase.postGame:
+            return
+        else:
+            self.whistlerError("Unknown GAMEDAY phase error!")
+        return
 
     # Regular whistle schedule check
     def scheduledProcessing(self):
@@ -455,9 +494,9 @@ class Whistler:
                     continue # Skip remaining processing
                 # If football game today
                 elif self.GAMEDAYPhase is not GamedayPhase.notGameday:
-                    # TODO
-                    #Football.getLatestScores()
-                    continue
+                    # If method returns true,
+                    if self.gamedayProcessing():
+                        continue # TODO: Decide if wanted
 
                 # If schedule whistle time, whistle
                 # If not, sleep until next useful time
