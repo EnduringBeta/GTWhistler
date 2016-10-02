@@ -145,14 +145,24 @@ class Whistler:
 
         # Check if day of WTWB (http://www.specialevents.gatech.edu/our-events/when-whistle-blows)
         self.wtwbTime = self.scheduleConfig['WTWB']
+        # TODO: Check if "is" is a good idea when used in code. Could be wrong!
         if self.dt.year  is self.wtwbTime['year']  and \
            self.dt.month is self.wtwbTime['month'] and \
            self.dt.day   is self.wtwbTime['day']:
             self.wtwbToday = True
 
+        # TODO: Update schedule on specific days in football season
+        if self.dt.month in footballSeasonMonths and \
+            self.curDay is updateDay:
+            Football.updateFootballSchedule(self.dt.year, APIdata_GTTeam)
+
+        schedule = Football.readFootballSchedule()
         # TODO: Check if day of a football game
-        if False:
-            self.GAMEDAY = True
+        for game in schedule:
+            # TODO: Not that this should just be learning the day, not time
+            if game[APIfield_DateTime] == self.dt.strftime(dtFormatFootballAPI):
+                self.GAMEDAY = True
+                self.gamedayPhase = GamedayPhase.earlyGameday
 
         logging.info("Ran daily check:")
         logging.info(" - Current Day: " + str(self.curDay))
@@ -221,6 +231,17 @@ class Whistler:
 
         # Remain quiet after ceremony
         self.sleepUntil(self.getMidnight())
+
+    # Regular whistle schedule check
+    def scheduledProcessing(self):
+        curTime = {"hour": self.dt.hour, "minute": self.dt.minute}
+        # If scheduled whistle time and haven't just whistled
+        if self.scheduleWhistled is False and curTime in self.dailySchedule:
+            self.scheduledWhistle()
+        # If not, sleep until next useful time
+        else:
+            self.scheduleWhistled = False
+            self.sleepUntil(self.getNextScheduledWhistle())
 
     # ----------------------
     # --- STRING METHODS ---
@@ -407,15 +428,9 @@ class Whistler:
                     #Football.getLatestScores()
                     continue
 
-                curTime = { "hour": self.dt.hour, "minute": self.dt.minute }
-                # If scheduled whistle time and haven't just whistled
-                if self.scheduleWhistled is False and curTime in self.dailySchedule:
-                    self.scheduledWhistle()
-                    continue
-                else:
-                    self.scheduleWhistled = False
-                    self.sleepUntil(self.getNextScheduledWhistle())
-                    continue
+                # If schedule whistle time, whistle
+                # If not, sleep until next useful time
+                self.scheduledProcessing()
                     
         except Exception as e:
             errorStr = "Error during loop: " + str(e)

@@ -23,6 +23,7 @@ logLevel             = logging.DEBUG
 tz                   = timezone('US/Eastern')
 dtFormat             = "%a, %d %b %Y - %H:%M:%S"
 dtFormatTwitter      = "%a %b %d %H:%M:%S %z %Y"
+dtFormatFootballAPI  = "%a-%b-%dT%H:%M:%S"
 
 # Time constants
 secPerMin            = 60
@@ -53,13 +54,29 @@ HighOsDelta          =  2
 LowOsDelta           =  2
 
 # Weekday constants
-Monday               = 0
-Tuesday              = 1
-Wednesday            = 2
-Thursday             = 3
-Friday               = 4
-Saturday             = 5
-Sunday               = 6
+class Weekday(Enum):
+    Monday           = 0
+    Tuesday          = 1
+    Wednesday        = 2
+    Thursday         = 3
+    Friday           = 4
+    Saturday         = 5
+    Sunday           = 6
+
+# Month constants
+class Month(Enum):
+    January          =  1
+    February         =  2
+    March            =  3
+    April            =  4
+    May              =  5
+    June             =  6
+    July             =  7
+    August           =  8
+    September        =  9
+    October          = 10
+    November         = 11
+    December         = 12
 
 # Delay constants
 startupDelay         = 10 # seconds
@@ -100,6 +117,13 @@ APIfield_Period        = "Period"
 
 APIdata_GTTeam         = "GTECH"
 #APIdata_GTTeamName     = "Georgia Tech Yellow Jackets"
+
+# Football season constants
+footballSeasonMonths = [Month.August,
+                        Month.September,
+                        Month.October,
+                        Month.November]
+updateDay         = Weekday.Sunday
 
 # Gameday constants
 class GamedayPhase(Enum):
