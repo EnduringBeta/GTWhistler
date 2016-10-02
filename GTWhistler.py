@@ -330,17 +330,19 @@ class Whistler:
         except Exception as e:
             logging.error("Failure when DMing: " + str(e))
 
-    def whistleTweet(self, text):
-        # Confirm it has been at least a few minutes since the last tweet
-        # Could be necessary if program started and stopped within 1 minute
-        lastTweetTime = datetime.strptime(self.prevTweets[0]['created_at'],
-                                          dtFormatTwitter) \
-                                           .astimezone(tz)
+    def whistleTweet(self, text, checkTimeDelta=True):
+        # For football games, do not care about short times between tweets for scores
+        if checkTimeDelta:
+            # Confirm it has been at least a few minutes since the last tweet
+            # Could be necessary if program started and stopped within 1 minute
+            lastTweetTime = datetime.strptime(self.prevTweets[0]['created_at'],
+                                              dtFormatTwitter) \
+                                               .astimezone(tz)
 
-        secSinceLastTweet = (self.dt - lastTweetTime).seconds
-        if 0 <= secSinceLastTweet <= minTweetTimeDelta * secPerMin:
-            sleep((minTweetTimeDelta * secPerMin) - secSinceLastTweet)
-            return
+            secSinceLastTweet = (self.dt - lastTweetTime).seconds
+            if 0 <= secSinceLastTweet <= minTweetTimeDelta * secPerMin:
+                sleep((minTweetTimeDelta * secPerMin) - secSinceLastTweet)
+                return
 
         # Otherwise, tweet!
         try:
