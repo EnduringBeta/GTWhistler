@@ -237,6 +237,12 @@ class Whistler:
         return text
 
     def isWhistleTextValid(self, text):
+        # Ensure the text does not exceed 140 characters
+        # Note: no support for interpreting links
+        # as taking up fewer characters
+        if len(text) > twitterCharLimit:
+            return False
+
         # Compare text against past tweets to avoid duplicates
         # (which will not be tweeted as per Twitter rules)
         for tweet in self.prevTweets:
