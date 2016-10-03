@@ -28,7 +28,7 @@ def readFootballAPI(basePath, dataPath, params=urllib.parse.urlencode({})):
         dataStr = response.read().decode()
         dataObj = json.loads(dataStr)
 
-        logging.info(dataStr)
+        #logging.info(dataStr)
         conn.close()
     except Exception as e:
         logging.error("Failure when accessing football API: " + str(e))
@@ -89,8 +89,14 @@ def getGameState(gameID):
         APIfield_HomeTeamScore: gameData[0][APIfield_Game][APIfield_HomeTeamScore],
         APIfield_Period:        gameData[0][APIfield_Game][APIfield_Period]
     }
+    logging.info(gameState)
 
     return gameState
+
+def gameStateMissingData(gameState):
+    return gameState is None or \
+           gameState[APIfield_HomeTeamScore] is None or \
+           gameState[APIfield_AwayTeamScore] is None
 
 def opposingTeam(myTeam, gameState):
     if gameState[APIfield_HomeTeam] == myTeam:
@@ -105,6 +111,10 @@ def ourTeamScore(myTeam, gameState):
         return gameState[APIfield_AwayTeamScore]
 
 def ourTeamScored(myTeam, prevGameState, curGameState):
+    # Check if any values (or game states themselves) are empty
+    if gameStateMissingData(prevGameState) or gameStateMissingData(curGameState):
+        return False
+
     # If my team is home
     if curGameState[APIfield_HomeTeam] == myTeam:
         # If my team score increased

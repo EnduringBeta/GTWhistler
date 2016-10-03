@@ -5,7 +5,7 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v1.0.3"
+versionNumber        = "v2.0"
 
 # Custom file for authentication data not to be shared publicly
 APIConfigFile        = "myConfig.json"
@@ -93,7 +93,8 @@ numTweetsCompare     = 5    # Number of past tweets to compare against when
                             # generating new tweet text
 twitterCharLimit     = 140  # Twitter 101 - all tweets must be <= 140 characters
 
-debugDoNotTweet      = True # While in development, this Boolean prevents the
+# Note: Use this Boolean for testing
+debugDoNotTweet     = False # While in development, this Boolean prevents the
                             # account from tweeting, instead printing on the
                             # machine to confirm proper output.
 
@@ -134,6 +135,9 @@ APIfield_TweetText      = "text"
 APIfield_TweetTimestamp = "created_at"
 
 # Football API constants
+# Thanks to Fantasy Data for providing a free
+# trial and discussing my project with me.
+# (https://fantasydata.com/products/real-time-sports-data-api.aspx)
 APIget        = "GET"
 
 APIprotocol   = "https://"

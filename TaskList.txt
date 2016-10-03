@@ -1,9 +1,6 @@
 Task List for GTWhistle
 
 TESTING
-WTWB day
-Reminder WTWB DM
-Football schedule updates
 Gameday, all aspects
 
 FEATURES

@@ -186,21 +186,16 @@ class Whistler:
     # Check if day of WTWB (http://www.specialevents.gatech.edu/our-events/when-whistle-blows)
     def checkIfWTWBDay(self):
         self.wtwbTime = self.scheduleConfig[config_WTWB][config_WTWBevent]
-        # TODO: Check on is vs ==. Could be wrong!
-        # Note: I have never seen this work properly yet.
         if self.isDTThisDate(self.wtwbTime[config_year],
                              self.wtwbTime[config_month],
                              self.wtwbTime[config_day]):
             self.wtwbToday = True
 
-    # TODO: Test this
     def updateIfFootballScheduleUpdateDay(self):
-        # TODO: Test this
         if self.dt.month in self.scheduleConfig[config_football][config_updateMonths] and \
            self.curDay is self.scheduleConfig[config_football][config_updateWeekday]:
             Football.updateFootballSchedule(self.dt.year, APIdata_GTTeam)
 
-    # TODO: Test this on gameday
     def getInfoIfGAMEDAY(self):
         for game in Football.readFootballSchedule():
             if game[APIfield_DateTime] is not None:
@@ -210,7 +205,7 @@ class Whistler:
                    self.dt.day   == gameDate.day:
                     self.GAMEDAYInfo = game
                     # If device turned on mid-day, this will be temporarily wrong
-                    self.GAMEDAYPhase = GamedayPhase.earlyGameday
+                    self.GAMEDAYPhase = GamedayPhase.midnightGameday
                     return
 
         # If no game today and did not already return
@@ -225,7 +220,6 @@ class Whistler:
             # If scheduled time is in the future
             if self.isDTBeforeThisTime(time[config_hour], time[config_minute]):
                 # If scheduled time is sooner than working time
-                # TODO: Is is right here?
                 if time[config_hour] < nextTime[config_hour] or \
                        (time[config_hour]  == nextTime[config_hour] and
                         time[config_minute] < nextTime[config_minute]):
@@ -297,6 +291,7 @@ class Whistler:
     # miss the game. So only before and after the game (with
     # assurances the device won't sleep through the game)
     # will regularly-scheduled whistles be enabled.
+    # TODO: Test this on GAMEDAYS to ensure it updates scores appropriately
     def gamedayProcessing(self):
         # Not GAMEDAY, so leave this method and do normal day
         if   self.GAMEDAYPhase is GamedayPhase.notGameday:
@@ -311,6 +306,7 @@ class Whistler:
             self.tweetRegularSchedule = False
             # Move to next phase
             self.GAMEDAYPhase = GamedayPhase.earlyGameday
+            logging.info("Leaving " + str(GamedayPhase.midnightGameday))
             return
         # Long before game, so allow scheduled whistles as long
         # as the next whistle/event isn't during pregame
@@ -320,7 +316,8 @@ class Whistler:
             nextWhistleTime = self.getNextScheduledWhistle()
 
             # If next scheduled event is after pregame begins, move to next phase
-            if self.isFirstTimeBeforeSecond(gameDate.hour - self.scheduleConfig[config_pregameHours],
+            if self.isFirstTimeBeforeSecond(gameDate.hour
+                                                - self.scheduleConfig[config_football][config_pregameHours],
                                             gameDate.minute,
                                             nextWhistleTime[config_hour],
                                             nextWhistleTime[config_minute]):
@@ -328,10 +325,12 @@ class Whistler:
                 self.tweetRegularSchedule = False
                 # Sleep until pregame time
                 self.sleepUntil({
-                    config_hour: gameDate.hour - self.scheduleConfig[config_pregameHours],
+                    config_hour: gameDate.hour
+                                    - self.scheduleConfig[config_football][config_pregameHours],
                     config_minute: gameDate.minute
                 })
                 self.GAMEDAYPhase = GamedayPhase.preGame
+                logging.info("Leaving " + str(GamedayPhase.earlyGameday))
             else:
                 # Leave on scheduled tweets since next one doesn't interfere with GAMEDAY
                 self.tweetRegularSchedule = True
@@ -346,6 +345,7 @@ class Whistler:
             })
 
             self.GAMEDAYPhase = GamedayPhase.toeHitLeather
+            logging.info("Leaving " + str(GamedayPhase.preGame))
             return
         # Tweet as game starts
         elif self.GAMEDAYPhase is GamedayPhase.toeHitLeather:
@@ -354,6 +354,7 @@ class Whistler:
             self.gameState = Football.getGameState(self.GAMEDAYInfo[APIfield_GameID])
 
             self.GAMEDAYPhase = GamedayPhase.gameOn
+            logging.info("Leaving " + str(GamedayPhase.toeHitLeather))
             return
         # Check if score has changed, tweet if so, then sleep until next sampling
         elif self.GAMEDAYPhase is GamedayPhase.gameOn:
@@ -378,6 +379,13 @@ class Whistler:
                 sleep(scoreSamplingPeriod * secPerMin)
                 return
 
+            # If no detected score, check if game state has empty data
+            # and replace with new state if it is filled.
+            # This could occur at the beginning of a game before it has started.
+            if Football.gameStateMissingData(self.gameState) and \
+                    not Football.gameStateMissingData(newGameState):
+                self.gameState = newGameState
+
             # If game is newly over
             if self.gameState[APIfield_Period] == APIdata_Final:
                 # Tweet as game ends if victory
@@ -392,6 +400,7 @@ class Whistler:
                     ))
 
                 self.GAMEDAYPhase = GamedayPhase.postGame
+                logging.info("Leaving " + str(GamedayPhase.gameOn))
             # Sleep until next time to sample
             else:
                 sleep(scoreSamplingPeriod * secPerMin)
@@ -399,8 +408,10 @@ class Whistler:
         # Return to normal scheduled operation
         # (Unlikely to have more to whistle today, anyway)
         elif self.GAMEDAYPhase is GamedayPhase.postGame:
+            self.GAMEDAYInfo = None
             self.gameState = None
             self.tweetRegularSchedule = True
+            logging.info("Leaving " + str(GamedayPhase.postGame))
             return
         else:
             self.whistlerError("Unknown GAMEDAY phase error!")
@@ -523,6 +534,7 @@ class Whistler:
     def DM(self, message):
         try:
             self.t.direct_messages.new(user=self.APIConfig[config_ownerUsername], text=message)
+            logging.info("DM: " + message)
         except Exception as e:
             logging.error("Failure when DMing: " + str(e))
 
@@ -616,8 +628,7 @@ class Whistler:
 # -----------------
 
 # Allow time for system to come up
-# TODO: Add this back in
-#sleep(startupDelay)
+sleep(startupDelay)
 
 GTWhistle = Whistler()
 GTWhistle.start()
