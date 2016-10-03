@@ -77,14 +77,48 @@ def readFootballSchedule():
         logging.error("Failure to read football schedule from file: " + str(e))
         return None
 
-def getLatestScores(gameID):
+def getGameState(gameID):
     # Convert gameID if not string
     if isinstance(gameID, int):
         gameID = str(gameID)
 
     gameData = readFootballAPI(APIstatspath, APIboxscore + gameID)
-    # Retrieving one game entry, so first and only in array
-    gameScores = { gameData[0][APIfield_Game][APIfield_AwayTeamScore],
-                   gameData[0][APIfield_Game][APIfield_HomeTeamScore] }
+    # Retrieved one game entry, so first and only in array
+    gameState = {
+        APIfield_AwayTeamScore: gameData[0][APIfield_Game][APIfield_AwayTeamScore],
+        APIfield_HomeTeamScore: gameData[0][APIfield_Game][APIfield_HomeTeamScore],
+        APIfield_Period:        gameData[0][APIfield_Game][APIfield_Period]
+    }
 
-    return gameScores
+    return gameState
+
+def opposingTeam(myTeam, gameState):
+    if gameState[APIfield_HomeTeam] == myTeam:
+        return gameState[APIfield_HomeTeam]
+    else:
+        return gameState[APIfield_AwayTeam]
+
+def ourTeamScore(myTeam, gameState):
+    if gameState[APIfield_HomeTeam] == myTeam:
+        return gameState[APIfield_HomeTeamScore]
+    else:
+        return gameState[APIfield_AwayTeamScore]
+
+def ourTeamScored(myTeam, prevGameState, curGameState):
+    # If my team is home
+    if curGameState[APIfield_HomeTeam] == myTeam:
+        # If my team score increased
+        return curGameState[APIfield_HomeTeamScore] > prevGameState[APIfield_HomeTeamScore]
+    # If my team is away
+    else:
+        # If my team score increased
+        return curGameState[APIfield_AwayTeamScore] > prevGameState[APIfield_AwayTeamScore]
+
+def ourTeamWinning(myTeam, homeTeam, homeTeamScore, awayTeamScore):
+    # Check who is home/away to properly compare scores
+    if homeTeam == myTeam:
+        # My team is home
+        return homeTeamScore > awayTeamScore
+    else:
+        # My team is away
+        return homeTeamScore < awayTeamScore

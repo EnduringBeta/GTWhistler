@@ -40,11 +40,13 @@ class Whistler:
     dailySchedule        = None
     scheduleWhistled     = False
     prevTweets           = None
+    tweetRegularSchedule = True
 
     wtwbToday            = False
     wtwbTime             = None
 
     GAMEDAYInfo          = None
+    gameState            = None
     GAMEDAYPhase         = GamedayPhase.notGameday
 
     # ---------------------
@@ -225,8 +227,8 @@ class Whistler:
                 # If scheduled time is sooner than working time
                 # TODO: Is is right here?
                 if time[config_hour] < nextTime[config_hour] or \
-                       (time[config_hour]   is nextTime[config_hour] and
-                        time[config_minute] <  nextTime[config_minute]):
+                       (time[config_hour]  == nextTime[config_hour] and
+                        time[config_minute] < nextTime[config_minute]):
                     nextTime = time
 
         return nextTime
@@ -254,50 +256,151 @@ class Whistler:
         return { config_hour: maxHour, config_minute: minMinute }
 
     def isDTBeforeThisTime(self, hour, minute):
-        return self.dt.hour   < hour  or \
-               self.dt.hour  == hour and \
-               self.dt.minute < minute
+        return self.isFirstTimeBeforeSecond(self.dt.hour, self.dt.minute, hour, minute)
+
+    @staticmethod
+    def isFirstTimeBeforeSecond(firstHour, firstMinute, secondHour, secondMinute):
+        return firstHour   < secondHour  or \
+               firstHour  == secondHour and \
+               firstMinute < secondMinute
 
     def isDTThisDate(self, year, month, day):
         return self.dt.year  == year  and \
                self.dt.month == month and \
                self.dt.day   == day
 
-    # TODO: Add reminder dates that send out DM to owner to update WTWB
     # Note: entire day is spent in this method
     def wtwbProcessing(self):
         # Note: like most methods, this assumes "dt" is current
         if self.isDTBeforeThisTime(self.wtwbTime[config_hour], self.wtwbTime[config_minute]):
             # Remain silent during day until ceremony
-            self.sleepUntil({config_hour: self.wtwbTime[config_hour],
-                             config_minute: self.wtwbTime[config_minute]})
+            self.sleepUntil({
+                config_hour: self.wtwbTime[config_hour],
+                config_minute: self.wtwbTime[config_minute]
+            })
 
             # At beginning of ceremony
-            self.whistleTweet(wtwb_explanation)
+            self.whistle(wtwb_explanation)
 
             # Delay for approximate length of ceremony
             sleep(self.wtwbTime[config_delay] * secPerMin)
 
             # ...Before tweeting in memoriam
-            self.whistleTweet(self.createValidRandomWhistleText(wtwb_inMemoriam))
+            self.whistle(self.createValidRandomWhistleText(wtwb_inMemoriam))
 
         # Remain quiet after ceremony (or if booted during ceremony)
         self.sleepUntil(self.getMidnight())
 
+    # "tweetRegularSchedule" is set at varous points during GAMEDAY
+    # because games may occur during when scheduled whistles
+    # should happen, but doing both is too convoluted and could
+    # miss the game. So only before and after the game (with
+    # assurances the device won't sleep through the game)
+    # will regularly-scheduled whistles be enabled.
     def gamedayProcessing(self):
-        if self.GAMEDAYPhase is GamedayPhase.notGameday:
+        # Not GAMEDAY, so leave this method and do normal day
+        if   self.GAMEDAYPhase is GamedayPhase.notGameday:
+            self.tweetRegularSchedule = True
             return
+        # Marching band tradition to celebrate GAMEDAY the second it arrives
+        elif self.GAMEDAYPhase is GamedayPhase.midnightGameday:
+            # Should reach this during midnight daily check
+            self.whistle(gameday_midnight)
+
+            # Turn off scheduled tweets to make sure we reach next phase and don't sleep too long
+            self.tweetRegularSchedule = False
+            # Move to next phase
+            self.GAMEDAYPhase = GamedayPhase.earlyGameday
+            return
+        # Long before game, so allow scheduled whistles as long
+        # as the next whistle/event isn't during pregame
         elif self.GAMEDAYPhase is GamedayPhase.earlyGameday:
+            # Get datetimes for next events
+            gameDate = datetime.strptime(self.GAMEDAYInfo[APIfield_DateTime], dtFormatFootballAPI)
+            nextWhistleTime = self.getNextScheduledWhistle()
+
+            # If next scheduled event is after pregame begins, move to next phase
+            if self.isFirstTimeBeforeSecond(gameDate.hour - self.scheduleConfig[config_pregameHours],
+                                            gameDate.minute,
+                                            nextWhistleTime[config_hour],
+                                            nextWhistleTime[config_minute]):
+                # Turn off scheduled tweets for rest of game-related events
+                self.tweetRegularSchedule = False
+                # Sleep until pregame time
+                self.sleepUntil({
+                    config_hour: gameDate.hour - self.scheduleConfig[config_pregameHours],
+                    config_minute: gameDate.minute
+                })
+                self.GAMEDAYPhase = GamedayPhase.preGame
+            else:
+                # Leave on scheduled tweets since next one doesn't interfere with GAMEDAY
+                self.tweetRegularSchedule = True
             return
+        # Tweet before game for maximal school spirit, then sleep until game
         elif self.GAMEDAYPhase is GamedayPhase.preGame:
+            self.whistle(gameday_pregame)
+            gameDate = datetime.strptime(self.GAMEDAYInfo[APIfield_DateTime], dtFormatFootballAPI)
+            self.sleepUntil({
+                config_hour: gameDate.hour,
+                config_minute: gameDate.minute
+            })
+
+            self.GAMEDAYPhase = GamedayPhase.toeHitLeather
             return
+        # Tweet as game starts
         elif self.GAMEDAYPhase is GamedayPhase.toeHitLeather:
+            self.whistle(gameday_toeHitLeather)
+            # Set initial game state (should be 0-0, of course)
+            self.gameState = Football.getGameState(self.GAMEDAYInfo[APIfield_GameID])
+
+            self.GAMEDAYPhase = GamedayPhase.gameOn
             return
+        # Check if score has changed, tweet if so, then sleep until next sampling
         elif self.GAMEDAYPhase is GamedayPhase.gameOn:
+            # Get new score and progress through game
+            # Note: scores are scrabled +/- 20%, but they should change during TD/FGs/Safeties
+            newGameState = Football.getGameState(self.GAMEDAYInfo[APIfield_GameID])
+
+            if Football.ourTeamScored(
+                    APIdata_GTTeam,
+                    self.gameState,
+                    newGameState
+            ):
+                # Update current game state
+                self.gameState = newGameState
+                # Whistle using new score as input
+                self.whistle(self.generateFootballWhistleText(
+                    Football.ourTeamScore(APIdata_GTTeam, self.gameState),
+                    Football.opposingTeam(APIdata_GTTeam, self.gameState)
+                ))
+                # In case of a score at the same time the game ends,
+                # do one at a time. Don't want to whistle back-to-back
+                sleep(scoreSamplingPeriod * secPerMin)
+                return
+
+            # If game is newly over
+            if self.gameState[APIfield_Period] == APIdata_Final:
+                # Tweet as game ends if victory
+                if Football.ourTeamWinning(
+                        APIdata_GTTeam,
+                        self.GAMEDAYInfo[APIfield_HomeTeam],
+                        self.gameState[APIfield_HomeTeamScore],
+                        self.gameState[APIfield_AwayTeamScore]):
+                    self.whistle(gameday_victory + self.generateFootballWhistleText(
+                        Football.ourTeamScore(APIdata_GTTeam, self.gameState),
+                        Football.opposingTeam(APIdata_GTTeam, self.gameState)
+                    ))
+
+                self.GAMEDAYPhase = GamedayPhase.postGame
+            # Sleep until next time to sample
+            else:
+                sleep(scoreSamplingPeriod * secPerMin)
             return
-        elif self.GAMEDAYPhase is GamedayPhase.gameEnds:
-            return
+        # Return to normal scheduled operation
+        # (Unlikely to have more to whistle today, anyway)
         elif self.GAMEDAYPhase is GamedayPhase.postGame:
+            self.gameState = None
+            self.tweetRegularSchedule = True
             return
         else:
             self.whistlerError("Unknown GAMEDAY phase error!")
@@ -423,19 +526,19 @@ class Whistler:
         except Exception as e:
             logging.error("Failure when DMing: " + str(e))
 
-    def whistleTweet(self, text, checkTimeDelta=True):
-        # For football games, do not care about short times between tweets for scores
-        if checkTimeDelta:
-            # Confirm it has been at least a few minutes since the last tweet
-            # Could be necessary if program started and stopped within 1 minute
-            lastTweetTime = datetime.strptime(self.prevTweets[0][APIfield_TweetTimestamp],
-                                              dtFormatTwitter) \
-                                               .astimezone(tz)
+    def whistleTweet(self, text):
+        # Confirm it has been at least a small amount of time since the last tweet
+        # Could be necessary if program started and stopped very quickly
+        # Use to be optional, but now only set to 1 minute, which is within
+        # GAMEDAY sampling rate for scores
+        lastTweetTime = datetime.strptime(self.prevTweets[0][APIfield_TweetTimestamp],
+                                          dtFormatTwitter) \
+                                           .astimezone(tz)
 
-            secSinceLastTweet = (self.dt - lastTweetTime).seconds
-            if 0 <= secSinceLastTweet <= minTweetTimeDelta * secPerMin:
-                sleep((minTweetTimeDelta * secPerMin) - secSinceLastTweet)
-                return
+        secSinceLastTweet = (self.dt - lastTweetTime).seconds
+        if 0 <= secSinceLastTweet <= minTweetTimeDelta * secPerMin:
+            sleep((minTweetTimeDelta * secPerMin) - secSinceLastTweet)
+            return
 
         # Otherwise, tweet!
         try:
@@ -459,15 +562,17 @@ class Whistler:
 
         self.scheduleWhistled = True
 
+    # Allows both methods of output for deployment and testing
+    def whistle(self, text):
+        if debugDoNotTweet:
+            self.whistlePrint(text) # For testing
+        else:
+            self.whistleTweet(text)
+
     def scheduledWhistle(self):
         # Only tweet if not recently whistled
         if not self.scheduleWhistled:
-            if debugDoNotTweet:
-                self.whistlePrint(self.createValidRandomWhistleText()) # For testing
-            else:
-                self.whistleTweet(self.createValidRandomWhistleText())
-        else:
-            return
+            self.whistle(self.createValidRandomWhistleText())
 
     # ----------------------------
     # --- MAIN PROCESSING LOOP ---
@@ -494,13 +599,13 @@ class Whistler:
                     continue # Skip remaining processing
                 # If football game today
                 elif self.GAMEDAYPhase is not GamedayPhase.notGameday:
-                    # If method returns true,
-                    if self.gamedayProcessing():
-                        continue # TODO: Decide if wanted
+                    self.gamedayProcessing()
 
-                # If schedule whistle time, whistle
-                # If not, sleep until next useful time
-                self.scheduledProcessing()
+                # Under some conditions (GAMEDAY), any regularly-scheduled tweets will be ignored
+                if self.tweetRegularSchedule:
+                    # If schedule whistle time, whistle
+                    # If not, sleep until next useful time
+                    self.scheduledProcessing()
                     
         except Exception as e:
             errorStr = "Error during loop: " + str(e)

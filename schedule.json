@@ -96,7 +96,7 @@
         }
     },
     "football": {
-        "_comment": "During these months (Aug-Dec) on that day of the week (Sunday), update the football schedule."
+        "_comment": "During these months (Aug-Dec) on that day of the week (Sunday), update the football schedule. Also stored is the number of hours before a game that is considered pregame",
         "updateMonths": [
             8,
             9,
@@ -104,6 +104,7 @@
             11,
             12
         ],
-        "updateWeekday": 6
+        "updateWeekday": 6,
+        "pregameHours":  1
     }
 }

@@ -81,7 +81,12 @@ LowOsDelta           =  2
 # Delay constants
 startupDelay         = 10 # seconds
 errorDelay           = 15 # minutes
-minTweetTimeDelta    = 5  # minutes
+minTweetTimeDelta    = 1  # minutes
+
+# This number is very important/delicate!
+# Setting this rate lower will likely cause this program to
+# exceed its maximum allotted number of API calls per month
+scoreSamplingPeriod  = 3  # minutes
 
 # Other Whistler constants
 numTweetsCompare     = 5    # Number of past tweets to compare against when
@@ -114,6 +119,7 @@ config_WTWBreminder      = "reminder"
 config_football          = "football"
 config_updateMonths      = "updateMonths"
 config_updateWeekday     = "updateWeekday"
+config_pregameHours      = "pregameHours"
 
 # Generic JSON field constants
 config_year              = "year"
@@ -149,20 +155,27 @@ APIfield_HomeTeamName  = "HomeTeamName"
 APIfield_AwayTeamScore = "AwayTeamScore"
 APIfield_HomeTeamScore = "HomeTeamScore"
 APIfield_Period        = "Period"
+APIdata_Final          = "F"
 
 APIdata_GTTeam         = "GTECH"
 #APIdata_GTTeamName     = "Georgia Tech Yellow Jackets"
 
 # Gameday constants
 class GamedayPhase(Enum):
-    notGameday    = 0
-    earlyGameday  = 1
-    preGame       = 2
-    toeHitLeather = 3
-    gameOn        = 4
-    gameEnds      = 5
-    postGame      = 6
+    notGameday      = 0
+    midnightGameday = 1
+    earlyGameday    = 2
+    preGame         = 3
+    toeHitLeather   = 4
+    gameOn          = 5
+    gameEnds        = 6
+    postGame        = 7
 
 APIdata_ugaTeam        = "GA"
 #APIdata_ugaTeamName    = "Georgia Bulldogs" # (sic)
 thwg                   = "(THWg)"
+gameday_midnight       = "(GAMEDAY!)"
+gameday_pregame        = "(Go Jackets!)"
+gameday_toeHitLeather  = "(Sting 'em!) " + defaultWhistleText
+# Used with score-calibrated whistle, so extra space needed
+gameday_victory        = "(Victory!) "
