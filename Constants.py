@@ -5,7 +5,7 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v1.0.2"
+versionNumber        = "v1.0.3"
 
 # Custom file for authentication data not to be shared publicly
 APIConfigFile        = "myConfig.json"
