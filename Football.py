@@ -117,11 +117,11 @@ def ourTeamScored(myTeam, prevGameState, curGameState):
 
     # If my team is home
     if curGameState[APIfield_HomeTeam] == myTeam:
-        # If my team score increased
+        # Return whether my team score increased
         return curGameState[APIfield_HomeTeamScore] > prevGameState[APIfield_HomeTeamScore]
     # If my team is away
     else:
-        # If my team score increased
+        # Return whether my team score increased
         return curGameState[APIfield_AwayTeamScore] > prevGameState[APIfield_AwayTeamScore]
 
 def ourTeamWinning(myTeam, homeTeam, homeTeamScore, awayTeamScore):
