@@ -147,7 +147,6 @@ APIstatspath  = "/v3/cfb/stats/JSON/"
 
 APIboxscore        = "BoxScore/"
 APIschedule        = "Games/"
-APIgamesinprogress = "AreAnyGamesInProgress"
 
 APIfield_Game          = "Game"
 APIfield_GameID        = "GameID"
@@ -172,8 +171,7 @@ class GamedayPhase(Enum):
     preGame         = 3
     toeHitLeather   = 4
     gameOn          = 5
-    gameEnds        = 6
-    postGame        = 7
+    postGame        = 6
 
 APIdata_ugaTeam        = "GA"
 #APIdata_ugaTeamName    = "Georgia Bulldogs" # (sic)
