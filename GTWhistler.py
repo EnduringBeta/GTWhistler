@@ -62,7 +62,7 @@ class Whistler:
         setupSuccess = self.twitterSetup()  and setupSuccess
         setupSuccess = self.scheduleSetup() and setupSuccess
         setupSuccess = self.logSetup()      and setupSuccess
-        if booting or scheduleGT is None:
+        if booting:
             setupSuccess = self.footballSetup() and setupSuccess
 
         return setupSuccess
@@ -114,8 +114,7 @@ class Whistler:
 
     def footballSetup(self):
         Football.updateHeaders(self.APIConfig[config_fantasyDataKey])
-        scheduleGT = Football.updateFootballSchedule(self.dt.year, APIdata_GTTeam)
-        if scheduleGT is not None:
+        if Football.updateFootballSchedule(self.dt.year, APIdata_GTTeam) is not None:
             return True
         return False
 
