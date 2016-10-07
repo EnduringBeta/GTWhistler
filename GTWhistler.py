@@ -57,12 +57,13 @@ class Whistler:
         # Run "daily check" with argument True to indicate this is on boot
         self.dailyCheck(True)
 
-    def fullSetup(self):
+    def fullSetup(self, booting):
         setupSuccess = self.configSetup()
         setupSuccess = self.twitterSetup()  and setupSuccess
         setupSuccess = self.scheduleSetup() and setupSuccess
         setupSuccess = self.logSetup()      and setupSuccess
-        setupSuccess = self.footballSetup() and setupSuccess
+        if booting or scheduleGT is None:
+            setupSuccess = self.footballSetup() and setupSuccess
 
         return setupSuccess
 
@@ -143,7 +144,7 @@ class Whistler:
         self.updateDateTime()
 
         # Run full setup each day and on boot
-        if not self.fullSetup():
+        if not self.fullSetup(booting):
             # If any setup did not succeed
             if booting:
                 self.whistlerError("Error during boot setup!")
