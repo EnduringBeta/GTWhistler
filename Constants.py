@@ -5,7 +5,7 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v2.0.2"
+versionNumber        = "v2.0.3"
 
 # Custom file for authentication data not to be shared publicly
 APIConfigFile        = "myConfig.json"
@@ -175,8 +175,8 @@ class GamedayPhase(Enum):
 
 APIdata_ugaTeam        = "GA"
 #APIdata_ugaTeamName    = "Georgia Bulldogs" # (sic)
-thwg                   = "(THWg)"
-gameday_midnight       = "(GAMEDAY!)"
+thwg                   = "(#THWg)"
+gameday_midnight       = "(#GAMEDAY!)"
 gameday_pregame        = "(Go Jackets!)"
 gameday_toeHitLeather  = "(Sting 'em!) " + defaultWhistleText
 # Used with score-calibrated whistle, so extra space needed
