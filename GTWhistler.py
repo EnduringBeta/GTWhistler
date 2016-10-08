@@ -511,10 +511,7 @@ class Whistler:
         return True
 
     def createValidRandomWhistleText(self, prefixString=""):
-        # Get previous tweets for later comparisons of time and text
-        self.prevTweets = self.t.statuses.user_timeline(
-                            screen_name=self.APIConfig[config_botUsername],
-                            count=numTweetsCompare)
+        self.setPrevTweets();
 
         potentialText = ""
         validTextFound = False
@@ -539,6 +536,11 @@ class Whistler:
             logging.error("Failure when DMing: " + str(e))
 
     def whistleTweet(self, text):
+        # Done in createValidRandomWhistleText, but not every whistle calls
+        # that method. Check if None and call if so.
+        if self.prevTweets is None:
+            self.setPrevTweets()
+
         # Confirm it has been at least a small amount of time since the last tweet
         # Could be necessary if program started and stopped very quickly
         # Use to be optional, but now only set to 1 minute, which is within
@@ -585,6 +587,12 @@ class Whistler:
         # Only tweet if not recently whistled
         if not self.scheduleWhistled:
             self.whistle(self.createValidRandomWhistleText())
+
+    def setPrevTweets(self):
+        # Get previous tweets for later comparisons of time and text
+        self.prevTweets = self.t.statuses.user_timeline(
+            screen_name=self.APIConfig[config_botUsername],
+            count=numTweetsCompare)
 
     # ----------------------------
     # --- MAIN PROCESSING LOOP ---
