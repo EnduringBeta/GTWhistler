@@ -85,24 +85,30 @@ def getGameState(gameID):
     gameData = readFootballAPI(APIstatspath, APIboxscore + gameID)
     # Retrieved one game entry, so first and only in array
     gameState = {
-        APIfield_AwayTeamScore: gameData[0][APIfield_Game][APIfield_AwayTeamScore],
+        APIfield_HomeTeam:      gameData[0][APIfield_Game][APIfield_HomeTeam],
+        APIfield_AwayTeam:      gameData[0][APIfield_Game][APIfield_AwayTeam],
         APIfield_HomeTeamScore: gameData[0][APIfield_Game][APIfield_HomeTeamScore],
+        APIfield_AwayTeamScore: gameData[0][APIfield_Game][APIfield_AwayTeamScore],
         APIfield_Period:        gameData[0][APIfield_Game][APIfield_Period]
     }
     logging.info(gameState)
 
     return gameState
 
+# Mostly concerned with scores being null
 def gameStateMissingData(gameState):
     return gameState is None or \
+           gameState[APIfield_HomeTeam]      is None or \
+           gameState[APIfield_AwayTeam]      is None or \
            gameState[APIfield_HomeTeamScore] is None or \
-           gameState[APIfield_AwayTeamScore] is None
+           gameState[APIfield_AwayTeamScore] is None or \
+           gameState[APIfield_Period]        is None
 
 def opposingTeam(myTeam, gameState):
     if gameState[APIfield_HomeTeam] == myTeam:
-        return gameState[APIfield_HomeTeam]
-    else:
         return gameState[APIfield_AwayTeam]
+    else:
+        return gameState[APIfield_HomeTeam]
 
 def ourTeamScore(myTeam, gameState):
     if gameState[APIfield_HomeTeam] == myTeam:
@@ -124,11 +130,11 @@ def ourTeamScored(myTeam, prevGameState, curGameState):
         # Return whether my team score increased
         return curGameState[APIfield_AwayTeamScore] > prevGameState[APIfield_AwayTeamScore]
 
-def ourTeamWinning(myTeam, homeTeam, homeTeamScore, awayTeamScore):
+def ourTeamWinning(myTeam, gameState):
     # Check who is home/away to properly compare scores
-    if homeTeam == myTeam:
+    if gameState[APIfield_HomeTeam] == myTeam:
         # My team is home
-        return homeTeamScore > awayTeamScore
+        return gameState[APIfield_HomeTeamScore] > gameState[APIfield_AwayTeamScore]
     else:
         # My team is away
-        return homeTeamScore < awayTeamScore
+        return gameState[APIfield_HomeTeamScore] < gameState[APIfield_AwayTeamScore]

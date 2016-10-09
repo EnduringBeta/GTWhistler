@@ -204,8 +204,33 @@ class Whistler:
                    self.dt.month == gameDate.month and \
                    self.dt.day   == gameDate.day:
                     self.GAMEDAYInfo = game
-                    # If device turned on mid-day, this will be temporarily wrong
-                    self.GAMEDAYPhase = GamedayPhase.midnightGameday
+                    # TODO: Testing
+                    # For each of these states, also set variables
+                    # that would be set if progressed through normally
+
+                    # If midnight hour
+                    if self.dt.hour is 0:
+                        self.GAMEDAYPhase = GamedayPhase.midnightGameday
+                    # If before pregame time
+                    elif self.isFirstTimeBeforeSecond(self.dt.hour,
+                                                      self.dt.minute,
+                                                      gameDate.hour - self.scheduleConfig[config_football][config_pregameHours],
+                                                      gameDate.minute):
+                        self.tweetRegularSchedule = False
+                        self.GAMEDAYPhase = GamedayPhase.earlyGameday
+                    # If before game begins
+                    elif self.isFirstTimeBeforeSecond(self.dt.hour,
+                                                      self.dt.minute,
+                                                      gameDate.hour,
+                                                      gameDate.minute):
+                        self.tweetRegularSchedule = False
+                        self.GAMEDAYPhase = GamedayPhase.preGame
+                    # If after game has begun (and if game over, will learn immediately)
+                    else:
+                        self.tweetRegularSchedule = False
+                        self.gameState = Football.getGameState(self.GAMEDAYInfo[APIfield_GameID])
+                        self.GAMEDAYPhase = GamedayPhase.gameOn
+
                     return
 
         # If no game today and did not already return
@@ -299,6 +324,7 @@ class Whistler:
             return
         # Marching band tradition to celebrate GAMEDAY the second it arrives
         elif self.GAMEDAYPhase is GamedayPhase.midnightGameday:
+            # TODO: If prevTweets have "#GAMEDAY" in them, skip.
             # Should reach this during midnight daily check
             self.whistle(gameday_midnight)
 
@@ -389,11 +415,7 @@ class Whistler:
             # If game is newly over
             if self.gameState[APIfield_Period] == APIdata_Final:
                 # Tweet as game ends if victory
-                if Football.ourTeamWinning(
-                        APIdata_GTTeam,
-                        self.GAMEDAYInfo[APIfield_HomeTeam],
-                        self.gameState[APIfield_HomeTeamScore],
-                        self.gameState[APIfield_AwayTeamScore]):
+                if Football.ourTeamWinning(APIdata_GTTeam, self.gameState):
                     self.whistle(gameday_victory + self.generateFootballWhistleText(
                         Football.ourTeamScore(APIdata_GTTeam, self.gameState),
                         Football.opposingTeam(APIdata_GTTeam, self.gameState)
@@ -511,7 +533,7 @@ class Whistler:
         return True
 
     def createValidRandomWhistleText(self, prefixString=""):
-        self.setPrevTweets();
+        self.setPrevTweets()
 
         potentialText = ""
         validTextFound = False
