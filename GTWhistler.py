@@ -554,6 +554,8 @@ class Whistler:
     def processDMs(self):
         for DM in self.getNewDMs():
             self.interpretDM(DM)
+            # Prevent sending tons of DMs in a burst
+            sleep(DM_delay)
 
     def getNewDMs(self):
         directMessages = None

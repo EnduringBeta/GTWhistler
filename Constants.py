@@ -5,7 +5,7 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v2.1.2"
+versionNumber        = "v2.1.3"
 
 # Custom file for authentication data not to be shared publicly
 APIConfigFile        = "config.json"
@@ -189,6 +189,7 @@ gameday_victory        = "(Victory!) "
 Storage_LatestDMID  = "LatestDMID"
 
 # Direct Messaging (DM) constants
+DM_delay            = 1
 DM_ID               = "id"
 DM_text             = "text"
 DM_senderID         = "sender_id"
