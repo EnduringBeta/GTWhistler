@@ -3,7 +3,6 @@ supervise/**
 .idea/**
 *.pyc
 GTW_log.txt
-exampleTweetData.txt
 config.json
 football.json
 schedule.json
