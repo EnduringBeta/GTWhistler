@@ -5,14 +5,16 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v2.0.4"
+versionNumber        = "v2.1.0"
 
 # Custom file for authentication data not to be shared publicly
-APIConfigFile        = "myConfig.json"
+APIConfigFile        = "config.json"
 # Custom file for holding all of the scheduled times the whistle should sound
 scheduleConfigFile   = "schedule.json"
 # Custom file for holding football schedule as access from API
 scheduleFootballFile = "football.json"
+# File for holding data between instances of the program running
+storageFile          = "storage.json"
 # File for holding logs of program behavior and actions
 logFile              = "GTW_log.txt"
 
@@ -105,6 +107,7 @@ wtwb_inMemoriam  = "(In memoriam) "
 
 # Config JSON field constants
 config_ownerUsername     = "owner_username"
+config_ownerUserID       = "owner_user_id"
 config_botUsername       = "bot_username"
 config_consumerKey       = "consumer_key"
 config_consumerSecret    = "consumer_secret"
@@ -181,3 +184,19 @@ gameday_pregame        = "(Go Jackets!)"
 gameday_toeHitLeather  = "(Sting 'em!) " + defaultWhistleText
 # Used with score-calibrated whistle, so extra space needed
 gameday_victory        = "(Victory!) "
+
+# Storage File constants
+Storage_LatestDMID  = "LatestDMID"
+
+# Direct Messaging (DM) constants
+DM_ID               = "id"
+DM_text             = "text"
+DM_senderID         = "sender_id"
+DM_senderScreenName = "sender_screen_name"
+
+# Direct Messaging (DM) commands
+DM_reset           = "reset"
+DM_printLog        = "log"
+DM_defaultNumLines = 10
+DM_maxNumLines     = 100
+DM_maxLogChars     = 200

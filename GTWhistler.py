@@ -41,6 +41,7 @@ class Whistler:
     scheduleWhistled     = False
     prevTweets           = None
     tweetRegularSchedule = True
+    continueLoop         = True
 
     wtwbToday            = False
     wtwbTime             = None
@@ -131,7 +132,7 @@ class Whistler:
         if self.t is not None and \
            self.APIConfig is not None and \
            self.APIConfig[config_ownerUsername] is not None:
-            self.DM(errorText)
+            self.sendDM(errorText)
 
     # ----------------------
     # --- TIMING METHODS ---
@@ -181,7 +182,7 @@ class Whistler:
         if self.isDTThisDate(self.dt.year, # Same every year, so not stored. Cheating!
                              self.scheduleConfig[config_WTWB][config_WTWBreminder][config_month],
                              self.scheduleConfig[config_WTWB][config_WTWBreminder][config_day]):
-            self.DM(wtwb_reminder)
+            self.sendDM(wtwb_reminder)
 
     # Check if day of WTWB (http://www.specialevents.gatech.edu/our-events/when-whistle-blows)
     def checkIfWTWBDay(self):
@@ -546,14 +547,99 @@ class Whistler:
 
         return potentialText
 
+    # ---------------------
+    # --- INPUT METHODS ---
+    # ---------------------
+
+    def processDMs(self):
+        newDMs = self.getNewDMs()
+
+        if newDMs is not None:
+            for DM in newDMs:
+                self.interpretDM(DM)
+
+        return
+
+    def getNewDMs(self):
+        directMessages = None
+
+        try:
+            directMessages = self.t.direct_messages()
+        except Exception as e:
+            logging.error("Failure when reading DMs: " + str(e))
+
+        latestID = Utils.readLatestDMID()
+
+        # Set latest read DM ID to first in list
+        # (most recent) if not same as existing
+        # Only do this for future use. Old "latest"
+        # must still be used for this call.
+        if directMessages[0][DM_ID] != latestID:
+            Utils.storeLatestDMID(directMessages[0][DM_ID])
+
+        # Return only newer DMs that last read one
+        # NOTE: Will miss DMs if more than 20 received since last check
+        outputDMList = []
+        for DM in directMessages:
+            if DM[DM_ID] == latestID:
+                return outputDMList
+            else:
+                outputDMList.append(DM)
+
+        logging.info("At least 20 new DMs received. Any beyond that since last check were missed.")
+
+        return outputDMList
+
+    def interpretDM(self, DM):
+        msg = DM[DM_text]
+        logging.info("Received DM: " + msg)
+
+        # If owner sent "reset"
+        if DM_reset in msg.lower() and DM[DM_senderID] == self.APIConfig[config_ownerUserID]:
+            logging.info("Resetting...")
+            self.continueLoop = False
+        # If owner sent "log [num lines]"
+        elif DM_printLog in msg.lower() and DM[DM_senderID] == self.APIConfig[config_ownerUserID]:
+            logging.info("Attempting to print log...")
+            strArr = msg.split()
+            if strArr[0] == DM_printLog and len(strArr) == 2:
+                try:
+                    numLines = int(strArr[1])
+                except Exception as e:
+                    logging.error("Failure to convert number of lines argument: " + str(e))
+                    self.sendDM("Print log command format: 'log [num lines]'")
+                    numLines = DM_defaultNumLines
+                self.sendDM(Utils.getLog(numLines))
+            elif len(strArr) is 1:
+                self.sendDM(Utils.getLog())
+            else:
+                self.sendDM("Print log command format: 'log [num lines]'")
+        # Otherwise
+        else:
+            # Reply with whistle sound of same length
+            msgDM = "t"
+            for index in range(len(msg) - 2):
+                msgDM += "o"
+            msgDM += "t"
+            self.sendDM(msgDM, DM[DM_senderID])
+
     # ----------------------
     # --- OUTPUT METHODS ---
     # ----------------------
 
-    def DM(self, message):
+    def sendDM(self, message, userID=0):
+        # If no user ID provided, send to owner
+        if userID == 0:
+            userID = self.APIConfig[config_ownerUserID]
+
         try:
-            self.t.direct_messages.new(user=self.APIConfig[config_ownerUsername], text=message)
-            logging.info("DM: " + message)
+            self.t.direct_messages.new(user_id=userID, text=message)
+            # TODO: Make this smarter
+            # If message isn't too long, log
+            if len(message) < DM_maxLogChars:
+                logging.info("DM: " + message)
+            else:
+                logging.info("DM long message")
         except Exception as e:
             logging.error("Failure when DMing: " + str(e))
 
@@ -621,12 +707,12 @@ class Whistler:
     # ----------------------------
 
     def start(self):
-        self.DM("[{0}] Wetting whistle... @ {1}"
-                .format(versionNumber,
+        self.sendDM("[{0}] Wetting whistle... @ {1}"
+                    .format(versionNumber,
                         datetime.now(tz).strftime(dtFormat)))
 
         try:
-            while 1:
+            while self.continueLoop:
                 # Get current date and time (where the whistle is)
                 self.dt = datetime.now(tz)
                 
@@ -634,6 +720,9 @@ class Whistler:
                 if self.curDay is not self.dt.weekday():
                     if not self.dailyCheck(): # Check return value to see if should exit
                         return
+
+                # Check if any new DMs and respond to them appropriately
+                self.processDMs()
 
                 # If When The Whistle Blows day
                 if self.wtwbToday:
@@ -648,7 +737,7 @@ class Whistler:
                     # If schedule whistle time, whistle
                     # If not, sleep until next useful time
                     self.scheduledProcessing()
-                    
+
         except Exception as e:
             errorStr = "Error during loop: " + str(e)
             self.whistlerError(errorStr)

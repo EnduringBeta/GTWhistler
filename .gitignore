@@ -4,5 +4,7 @@ supervise/**
 *.pyc
 GTW_log.txt
 exampleTweetData.txt
-myConfig.json
-mySchedule.json
+config.json
+football.json
+schedule.json
+storage.json
