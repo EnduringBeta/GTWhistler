@@ -614,12 +614,15 @@ class Whistler:
                 self.sendDM("Print log command format: 'log [num lines]'")
         # Otherwise
         else:
-            # TODO: Make this more careful not to send tons of DMs
-            # Reply with whistle sound of same length
-            msgDM = "t"
-            for index in range(len(msg) - 2):
-                msgDM += "o"
-            msgDM += "t"
+            # Reply with whistle sound of roughly same length
+            msgDM = "T"
+            if len(msg) < DM_maxTootLength:
+                for index in range(len(msg)):
+                    msgDM += "o"
+            else:
+                for index in range(DM_maxTootLength):
+                    msgDM += "o"
+            msgDM += "t!"
             self.sendDM(msgDM, DM[DM_senderID])
 
     # ----------------------

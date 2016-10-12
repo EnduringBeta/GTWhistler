@@ -5,7 +5,7 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v2.1.3"
+versionNumber        = "v2.1.4"
 
 # Custom file for authentication data not to be shared publicly
 APIConfigFile        = "config.json"
@@ -201,3 +201,4 @@ DM_printLog        = "log"
 DM_defaultNumLines = 10
 DM_maxNumLines     = 100
 DM_maxLogChars     = 200
+DM_maxTootLength   = 100
