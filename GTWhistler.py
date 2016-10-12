@@ -552,13 +552,8 @@ class Whistler:
     # ---------------------
 
     def processDMs(self):
-        newDMs = self.getNewDMs()
-
-        if newDMs is not None:
-            for DM in newDMs:
-                self.interpretDM(DM)
-
-        return
+        for DM in self.getNewDMs():
+            self.interpretDM(DM)
 
     def getNewDMs(self):
         directMessages = None
@@ -567,6 +562,7 @@ class Whistler:
             directMessages = self.t.direct_messages()
         except Exception as e:
             logging.error("Failure when reading DMs: " + str(e))
+            return []
 
         latestID = Utils.readLatestDMID()
 
@@ -577,7 +573,7 @@ class Whistler:
         if directMessages[0][DM_ID] != latestID:
             Utils.storeLatestDMID(directMessages[0][DM_ID])
 
-        # Return only newer DMs that last read one
+        # Return only newer DMs than last read one
         # NOTE: Will miss DMs if more than 20 received since last check
         outputDMList = []
         for DM in directMessages:
@@ -596,7 +592,7 @@ class Whistler:
 
         # If owner sent "reset"
         if DM_reset in msg.lower() and DM[DM_senderID] == self.APIConfig[config_ownerUserID]:
-            logging.info("Resetting...")
+            self.sendDM("Resetting...")
             self.continueLoop = False
         # If owner sent "log [num lines]"
         elif DM_printLog in msg.lower() and DM[DM_senderID] == self.APIConfig[config_ownerUserID]:
