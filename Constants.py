@@ -5,7 +5,12 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v2.1.4"
+versionNumber        = "v2.1.5"
+
+# Note: Use this Boolean for testing
+debugDoNotTweet      = False # While in development, this Boolean prevents the
+                             # account from tweeting, instead printing on the
+                             # machine to confirm proper output.
 
 # Custom file for authentication data not to be shared publicly
 APIConfigFile        = "config.json"
@@ -94,11 +99,6 @@ scoreSamplingPeriod  = 2 # minutes
 numTweetsCompare     = 5    # Number of past tweets to compare against when
                             # generating new tweet text
 twitterCharLimit     = 140  # Twitter 101 - all tweets must be <= 140 characters
-
-# Note: Use this Boolean for testing
-debugDoNotTweet     = False # While in development, this Boolean prevents the
-                            # account from tweeting, instead printing on the
-                            # machine to confirm proper output.
 
 # WTWB string constants
 wtwb_reminder    = "(This is your one reminder to update the When The Whistle Blows data for this year!)"

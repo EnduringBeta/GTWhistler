@@ -58,8 +58,8 @@ def updateFootballSchedule(year, team):
             scheduleGT.append(newGame)
 
     # Write schedule to log and to file for later use
-    logging.info("Got football schedule:")
-    logging.info(json.dumps(scheduleGT, indent=4))
+    logging.info("Got football schedule")
+    #logging.info(json.dumps(scheduleGT, indent=4))
     try:
         with open(scheduleFootballFile, 'w') as outFile:
             json.dump(scheduleGT, outFile, indent=4)
