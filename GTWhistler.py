@@ -599,7 +599,7 @@ class Whistler:
         # If owner sent "log [num lines]"
         elif DM_printLog in msg.lower() and DM[DM_senderID] == self.APIConfig[config_ownerUserID]:
             logging.info("Attempting to print log...")
-            strArr = msg.split()
+            strArr = msg.lower().split()
             if strArr[0] == DM_printLog and len(strArr) == 2:
                 try:
                     numLines = int(strArr[1])
