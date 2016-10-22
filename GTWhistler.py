@@ -317,7 +317,6 @@ class Whistler:
     # miss the game. So only before and after the game (with
     # assurances the device won't sleep through the game)
     # will regularly-scheduled whistles be enabled.
-    # TODO: Test this on GAMEDAYS to ensure it updates scores appropriately
     def gamedayProcessing(self):
         # Not GAMEDAY, so leave this method and do normal day
         if   self.GAMEDAYPhase is GamedayPhase.notGameday:
@@ -413,6 +412,7 @@ class Whistler:
                     not Football.gameStateMissingData(newGameState):
                 self.gameState = newGameState
 
+            # TODO: Have not seen this conditional trigger successfully in running bot
             # If game is newly over
             if self.gameState[APIfield_Period] == APIdata_Final:
                 # Tweet as game ends if victory
@@ -636,7 +636,6 @@ class Whistler:
 
         try:
             self.t.direct_messages.new(user_id=userID, text=message)
-            # TODO: Make this smarter
             # If message isn't too long, log
             if len(message) < DM_maxLogChars:
                 logging.info("DM: " + message)

@@ -15,15 +15,19 @@ def logFileSetup():
         return errorStr
     return ""
 
-# TODO: Improve how lines are formatted in DM
 def getLog(numLines=DM_defaultNumLines):
     if numLines > DM_maxNumLines:
         numLines = DM_maxNumLines
     try:
         with open(logFile, 'r') as inFile:
             logText = inFile.readlines()
-            # Read latest lines by reverse indexing
-            return logText[-numLines:]
+            # If log file is too short, only return what it has
+            if len(logText) < numLines:
+                numLines = logText.count()
+            # Read latest lines by reverse indexing,
+            # then form into single string
+            # (Each log line has new line character already.)
+            return ''.join(logText[-numLines:])
     except Exception as e:
         logging.error("Failure to read from storage file: " + str(e))
         return ""
