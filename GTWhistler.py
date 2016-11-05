@@ -384,17 +384,17 @@ class Whistler:
             return
         # Check if score has changed, tweet if so, then sleep until next sampling
         elif self.GAMEDAYPhase is GamedayPhase.gameOn:
+            # Hang on to previous state for comparison
+            oldGameState = self.gameState
             # Get new score and progress through game
             # Note: scores are scrabled +/- 20%, but they should change during TD/FGs/Safeties
-            newGameState = Football.getGameState(self.GAMEDAYInfo[APIfield_GameID])
+            self.gameState = Football.getGameState(self.GAMEDAYInfo[APIfield_GameID])
 
             if Football.ourTeamScored(
                     APIdata_GTTeam,
+                    oldGameState,
                     self.gameState,
-                    newGameState
             ):
-                # Update current game state
-                self.gameState = newGameState
                 # Whistle using new score as input
                 self.whistle(self.generateFootballWhistleText(
                     Football.ourTeamScore(APIdata_GTTeam, self.gameState),
@@ -405,14 +405,6 @@ class Whistler:
                 sleep(scoreSamplingPeriod * secPerMin)
                 return
 
-            # If no detected score, check if game state has empty data
-            # and replace with new state if it is filled.
-            # This could occur at the beginning of a game before it has started.
-            if Football.gameStateMissingData(self.gameState) and \
-                    not Football.gameStateMissingData(newGameState):
-                self.gameState = newGameState
-
-            # TODO: Have not seen this conditional trigger successfully in running bot
             # If game is newly over
             if self.gameState[APIfield_Period] == APIdata_Final:
                 # Tweet as game ends if victory

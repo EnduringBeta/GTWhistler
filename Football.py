@@ -118,6 +118,7 @@ def ourTeamScore(myTeam, gameState):
 
 def ourTeamScored(myTeam, prevGameState, curGameState):
     # Check if any values (or game states themselves) are empty
+    # This can occur at the beginning of a game
     if gameStateMissingData(prevGameState) or gameStateMissingData(curGameState):
         return False
 
