@@ -41,7 +41,7 @@ class Whistler:
     scheduleWhistled     = False
     prevTweets           = None
     tweetRegularSchedule = True
-    continueLoop         = True
+    reset                = False
 
     wtwbToday            = False
     wtwbTime             = None
@@ -587,7 +587,7 @@ class Whistler:
         # If owner sent "reset"
         if DM_reset in msg.lower() and DM[DM_senderID] == self.APIConfig[config_ownerUserID]:
             self.sendDM("Resetting...")
-            self.continueLoop = False
+            self.reset = True
         # If owner sent "log [num lines]"
         elif DM_printLog in msg.lower() and DM[DM_senderID] == self.APIConfig[config_ownerUserID]:
             logging.info("Attempting to print log...")
@@ -705,28 +705,30 @@ class Whistler:
                         datetime.now(tz).strftime(dtFormat)))
 
         try:
-            while self.continueLoop:
+            while not self.reset:
                 # Get current date and time (where the whistle is)
                 self.dt = datetime.now(tz)
                 
                 # If first check of a new day, run daily check
-                if self.curDay is not self.dt.weekday():
+                if self.curDay is not self.dt.weekday() and not self.reset:
                     if not self.dailyCheck(): # Check return value to see if should exit
                         return
 
                 # Check if any new DMs and respond to them appropriately
-                self.processDMs()
+                if not self.reset:
+                    self.processDMs()
 
                 # If When The Whistle Blows day
-                if self.wtwbToday:
-                    self.wtwbProcessing()
-                    continue # Skip remaining processing
-                # If football game today
-                elif self.GAMEDAYPhase is not GamedayPhase.notGameday:
-                    self.gamedayProcessing()
+                if not self.reset:
+                    if self.wtwbToday:
+                        self.wtwbProcessing()
+                        continue # Skip remaining processing
+                    # If football game today
+                    elif self.GAMEDAYPhase is not GamedayPhase.notGameday:
+                        self.gamedayProcessing()
 
                 # Under some conditions (GAMEDAY), any regularly-scheduled tweets will be ignored
-                if self.tweetRegularSchedule:
+                if self.tweetRegularSchedule and not self.reset:
                     # If schedule whistle time, whistle
                     # If not, sleep until next useful time
                     self.scheduledProcessing()
