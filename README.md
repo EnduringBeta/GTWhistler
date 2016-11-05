@@ -20,9 +20,6 @@ This bot automates tweets at the times the Georgia Tech whistle sounds, includin
 
 ## Task List: ##
 
-### Testing ###
-* Detecting and tweeting end of Gameday
-
 ### Features ###
 * Add commencement event (does whistle go off then?)
 * Auto-like mentions
