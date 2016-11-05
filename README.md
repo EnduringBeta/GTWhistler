@@ -20,6 +20,12 @@ This bot automates tweets at the times the Georgia Tech whistle sounds, includin
 
 ## Task List: ##
 
+### Confirmation Needed ###
+* Commencement
+* Noon weekend whistles
+
+### Bugs ###
+* Don't reply to normal DMs at midnight.
+
 ### Features ###
-* Add commencement event (does whistle go off then?)
 * Auto-like mentions
