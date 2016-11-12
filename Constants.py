@@ -93,7 +93,7 @@ minTweetTimeDelta    = 1  # minutes
 # This number is very important/delicate!
 # Setting this rate lower will likely cause this program to
 # exceed its maximum allotted number of API calls per month
-scoreSamplingPeriod  = 2 # minutes
+scoreSamplingPeriod  = 10 # minutes // Temporary for avoiding cap!
 
 # Other Whistler constants
 numTweetsCompare     = 5    # Number of past tweets to compare against when
