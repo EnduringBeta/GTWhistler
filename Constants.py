@@ -5,7 +5,7 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v2.1.8t"
+versionNumber        = "v2.1.8"
 
 # Note: Use this Boolean for testing
 debugDoNotTweet      = False # While in development, this Boolean prevents the
@@ -93,7 +93,7 @@ minTweetTimeDelta    = 1  # minutes
 # This number is very important/delicate!
 # Setting this rate lower will likely cause this program to
 # exceed its maximum allotted number of API calls per month
-scoreSamplingPeriod  = 10 # minutes // Temporary for avoiding cap!
+scoreSamplingPeriod  = 2 # minutes
 
 # Other Whistler constants
 numTweetsCompare     = 5    # Number of past tweets to compare against when
