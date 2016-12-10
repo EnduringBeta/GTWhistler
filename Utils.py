@@ -30,7 +30,7 @@ def getLog(numLines=DM_defaultNumLines):
             # to ensure it can be DMed
             for line in logText:
                 if len(line) > DM_maxLineLength:
-                    logText[logText.index(line)] = line[:DM_maxLineLength - 6] + "[...]"
+                    logText[logText.index(line)] = line[:DM_maxLineLength - 6] + "[...]\n"
 
             # Read latest lines by reverse indexing,
             # then form into single string

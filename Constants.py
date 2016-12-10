@@ -5,7 +5,7 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v2.1.9"
+versionNumber        = "v2.1.10"
 
 # Note: Use this Boolean for testing
 debugDoNotTweet      = False # While in development, this Boolean prevents the
@@ -205,6 +205,7 @@ DM_reset           = "reset"
 DM_printLog        = "log"
 DM_defaultNumLines = 10
 DM_maxNumLines     = 100
-DM_maxLineLength   = 100
+# Possible that a DM will fail if too many requested lines are this long, but unlikely
+DM_maxLineLength   = 200
 DM_maxLogChars     = 200
 DM_maxTootLength   = 100
