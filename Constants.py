@@ -5,7 +5,7 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v2.1.8"
+versionNumber        = "v2.1.9"
 
 # Note: Use this Boolean for testing
 debugDoNotTweet      = False # While in development, this Boolean prevents the
@@ -95,10 +95,15 @@ minTweetTimeDelta    = 1  # minutes
 # exceed its maximum allotted number of API calls per month
 scoreSamplingPeriod  = 2 # minutes
 
+# Escape hatch value for if offline and will never receive data
+# indicating the game is over
+gamedayMaxHours      = 6 # hours
+
 # Other Whistler constants
-numTweetsCompare     = 5    # Number of past tweets to compare against when
-                            # generating new tweet text
-twitterCharLimit     = 140  # Twitter 101 - all tweets must be <= 140 characters
+numTweetsCompare     = 5     # Number of past tweets to compare against when
+                             # generating new tweet text
+twitterCharLimit     = 140   # Twitter 101 - all tweets must be <= 140 characters
+twitterDMCharLimit   = 10000 # Twitter 201 - all DMs as of mid-2015 can be up to 10,000 characters long
 
 # WTWB string constants
 wtwb_reminder    = "(This is your one reminder to update the When The Whistle Blows data for this year!)"
@@ -200,5 +205,6 @@ DM_reset           = "reset"
 DM_printLog        = "log"
 DM_defaultNumLines = 10
 DM_maxNumLines     = 100
+DM_maxLineLength   = 100
 DM_maxLogChars     = 200
 DM_maxTootLength   = 100

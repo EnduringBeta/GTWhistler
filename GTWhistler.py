@@ -205,7 +205,7 @@ class Whistler:
                    self.dt.month == gameDate.month and \
                    self.dt.day   == gameDate.day:
                     self.GAMEDAYInfo = game
-                    # TODO: Testing
+                    # TODO: Needs testing
                     # For each of these states, also set variables
                     # that would be set if progressed through normally
 
@@ -274,6 +274,13 @@ class Whistler:
     @staticmethod
     def getMidnight():
         return { config_hour: maxHour, config_minute: minMinute }
+
+    # Checks down to the minute if at midnight
+    def isMidnight(self):
+        mn = self.getMidnight()
+
+        return self.dt.hour == minHour and \
+               self.dt.minute == mn[config_minute]
 
     def isDTBeforeThisTime(self, hour, minute):
         return self.isFirstTimeBeforeSecond(self.dt.hour, self.dt.minute, hour, minute)
@@ -384,6 +391,12 @@ class Whistler:
             return
         # Check if score has changed, tweet if so, then sleep until next sampling
         elif self.GAMEDAYPhase is GamedayPhase.gameOn:
+            # TODO: Needs testing
+            # If offline, escape this loop after game is surely over
+            gameDate = datetime.strptime(self.GAMEDAYInfo[APIfield_DateTime], dtFormatFootballAPI)
+            if abs(self.dt.hour - gameDate.hour) > gamedayMaxHours:
+                self.GAMEDAYPhase = GamedayPhase.postGame
+
             # Hang on to previous state for comparison
             oldGameState = self.gameState
             # Get new score and progress through game
@@ -514,16 +527,29 @@ class Whistler:
         # Note: no support for interpreting links
         # as taking up fewer characters
         if len(text) > twitterCharLimit:
+            # Instead rely on code calling this to be smart if returns false
+            # This code would not work anyway: "text" isn't returned
             # Truncate text to fit (better than quitting entirely!)
-            text = text[0:twitterCharLimit]
+            #text = text[0:twitterCharLimit]
+
+            logging.warning("Warning: attempted to tweet something too long: " + text)
+            return False
 
         # Compare text against past tweets to avoid duplicates
         # (which will not be tweeted as per Twitter rules)
         for tweet in self.prevTweets:
             if tweet[APIfield_TweetText] == text:
+                logging.warning("Warning: attempted to tweet duplicate: " + text)
                 return False
 
         return True
+
+    def isWhistleDMTextValid(self, text):
+        if len(text) > twitterDMCharLimit:
+            logging.warning("Warning: attempted to DM something too long: " + text)
+            return False
+        else:
+            return True
 
     def createValidRandomWhistleText(self, prefixString=""):
         self.setPrevTweets()
@@ -604,24 +630,31 @@ class Whistler:
                 self.sendDM(Utils.getLog())
             else:
                 self.sendDM("Print log command format: 'log [num lines]'")
-        # Otherwise
+        # Otherwise toot response (if not midnight)
         else:
-            # Reply with whistle sound of roughly same length
-            msgDM = "T"
-            if len(msg) < DM_maxTootLength:
-                for index in range(len(msg)):
-                    msgDM += "o"
+            if not self.isMidnight():
+                # Reply with whistle sound of roughly same length
+                msgDM = "T"
+                if len(msg) < DM_maxTootLength:
+                    for index in range(len(msg)):
+                        msgDM += "o"
+                else:
+                    for index in range(DM_maxTootLength):
+                        msgDM += "o"
+                msgDM += "t!"
+                self.sendDM(msgDM, DM[DM_senderID])
             else:
-                for index in range(DM_maxTootLength):
-                    msgDM += "o"
-            msgDM += "t!"
-            self.sendDM(msgDM, DM[DM_senderID])
+                logging.info("...Heart of a lion, and the wings of a bat...")
+                logging.info("Ignoring tootable DM (Because It's Midnite!): " + msg)
 
     # ----------------------
     # --- OUTPUT METHODS ---
     # ----------------------
 
     def sendDM(self, message, userID=0):
+        if not self.isWhistleDMTextValid(message):
+            return
+
         # If no user ID provided, send to owner
         if userID == 0:
             userID = self.APIConfig[config_ownerUserID]

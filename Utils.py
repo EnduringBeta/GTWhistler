@@ -15,6 +15,7 @@ def logFileSetup():
         return errorStr
     return ""
 
+# This method truncates log lines for DMing
 def getLog(numLines=DM_defaultNumLines):
     if numLines > DM_maxNumLines:
         numLines = DM_maxNumLines
@@ -24,6 +25,13 @@ def getLog(numLines=DM_defaultNumLines):
             # If log file is too short, only return what it has
             if len(logText) < numLines:
                 numLines = logText.count()
+
+            # Limit length of any particular line to 100 characters
+            # to ensure it can be DMed
+            for line in logText:
+                if len(line) > DM_maxLineLength:
+                    logText[logText.index(line)] = line[:DM_maxLineLength - 6] + "[...]"
+
             # Read latest lines by reverse indexing,
             # then form into single string
             # (Each log line has new line character already.)
