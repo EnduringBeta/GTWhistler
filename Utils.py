@@ -24,7 +24,7 @@ def getLog(numLines=DM_defaultNumLines):
             logText = inFile.readlines()
             # If log file is too short, only return what it has
             if len(logText) < numLines:
-                numLines = logText.count()
+                numLines = len(logText)
 
             # Limit length of any particular line to 100 characters
             # to ensure it can be DMed

@@ -774,8 +774,5 @@ class Whistler:
 # --- EXECUTION ---
 # -----------------
 
-# Allow time for system to come up
-sleep(startupDelay)
-
 GTWhistle = Whistler()
 GTWhistle.start()
