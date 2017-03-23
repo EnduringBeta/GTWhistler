@@ -100,7 +100,7 @@ scoreSamplingPeriod  = 2 # minutes
 gamedayMaxHours      = 6 # hours
 
 # Other Whistler constants
-numTweetsCompare     = 5     # Number of past tweets to compare against when
+numTweetsCompare     = 12    # Number of past tweets to compare against when
                              # generating new tweet text
 twitterCharLimit     = 140   # Twitter 101 - all tweets must be <= 140 characters
 twitterDMCharLimit   = 10000 # Twitter 201 - all DMs as of mid-2015 can be up to 10,000 characters long
