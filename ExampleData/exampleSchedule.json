@@ -2,89 +2,58 @@
     "_comment":     "This file holds the schedule for the whistle to sound. The first index is Monday. All times are 24-hour format.",
     "regularSchedule": [
         [
-            {"hour":  7, "minute": 55},
-            {"hour":  8, "minute": 55},
+            {"hour":  8, "minute": 50},
             {"hour":  9, "minute": 55},
-            {"hour": 10, "minute": 55},
-            {"hour": 11, "minute": 55},
-            {"hour": 12, "minute": 55},
-            {"hour": 13, "minute": 55},
-            {"hour": 14, "minute": 55},
-            {"hour": 15, "minute": 55},
-            {"hour": 16, "minute": 55},
-            {"hour": 17, "minute": 55}
+            {"hour": 11, "minute":  0},
+            {"hour": 12, "minute":  5},
+            {"hour": 13, "minute": 10},
+            {"hour": 14, "minute": 45},
+            {"hour": 16, "minute": 15},
+            {"hour": 17, "minute": 45}
         ],
         [
-            {"hour":  7, "minute": 55},
-            {"hour":  8, "minute": 55},
-            {"hour":  9, "minute": 25},
+            {"hour":  9, "minute": 15},
+            {"hour": 10, "minute": 45},
+            {"hour": 13, "minute": 15},
+            {"hour": 14, "minute": 45},
+            {"hour": 16, "minute": 15},
+            {"hour": 17, "minute": 45}
+        ],
+        [
+            {"hour":  8, "minute": 50},
             {"hour":  9, "minute": 55},
-            {"hour": 10, "minute": 55},
-            {"hour": 11, "minute": 55},
-            {"hour": 12, "minute": 55},
-            {"hour": 13, "minute": 25},
-            {"hour": 13, "minute": 55},
-            {"hour": 14, "minute": 55},
-            {"hour": 15, "minute": 55},
-            {"hour": 16, "minute": 25},
-            {"hour": 16, "minute": 55},
-            {"hour": 17, "minute": 55}
+            {"hour": 11, "minute":  0},
+            {"hour": 12, "minute":  5},
+            {"hour": 13, "minute": 10},
+            {"hour": 14, "minute": 45},
+            {"hour": 16, "minute": 15},
+            {"hour": 17, "minute": 45}
         ],
         [
-            {"hour":  7, "minute": 55},
-            {"hour":  8, "minute": 55},
+            {"hour":  9, "minute": 15},
+            {"hour": 10, "minute": 45},
+            {"hour": 13, "minute": 15},
+            {"hour": 14, "minute": 45},
+            {"hour": 16, "minute": 15},
+            {"hour": 17, "minute": 45}
+        ],
+        [
+            {"hour":  8, "minute": 50},
             {"hour":  9, "minute": 55},
-            {"hour": 10, "minute": 55},
-            {"hour": 11, "minute": 55},
-            {"hour": 12, "minute": 55},
-            {"hour": 13, "minute": 55},
-            {"hour": 14, "minute": 55},
-            {"hour": 15, "minute": 55},
-            {"hour": 16, "minute": 55},
-            {"hour": 17, "minute": 55}
+            {"hour": 11, "minute":  0},
+            {"hour": 12, "minute":  5},
+            {"hour": 13, "minute": 10},
+            {"hour": 14, "minute": 45}
         ],
-        [
-            {"hour":  7, "minute": 55},
-            {"hour":  8, "minute": 55},
-            {"hour":  9, "minute": 25},
-            {"hour":  9, "minute": 55},
-            {"hour": 10, "minute": 55},
-            {"hour": 11, "minute": 55},
-            {"hour": 12, "minute": 55},
-            {"hour": 13, "minute": 25},
-            {"hour": 13, "minute": 55},
-            {"hour": 14, "minute": 55},
-            {"hour": 15, "minute": 55},
-            {"hour": 16, "minute": 25},
-            {"hour": 16, "minute": 55},
-            {"hour": 17, "minute": 55}
-        ],
-        [
-            {"hour":  7, "minute": 55},
-            {"hour":  8, "minute": 55},
-            {"hour":  9, "minute": 55},
-            {"hour": 10, "minute": 55},
-            {"hour": 11, "minute": 55},
-            {"hour": 12, "minute": 55},
-            {"hour": 13, "minute": 55},
-            {"hour": 14, "minute": 55},
-            {"hour": 15, "minute": 55},
-            {"hour": 16, "minute": 55},
-            {"hour": 17, "minute": 55}
-        ],
-        [
-            {"hour": 12, "minute":  0}
-        ],
-        [
-            {"hour": 12, "minute":  0}
-        ]
+        [],
+        []
     ],
     "WTWB": {
         "event": {
             "_comment": "When The Whistle Blows is a memorial service for Georgia Tech community deaths. It occurs once a year.",
-            "year": 2016,
+            "year": 2017,
             "month": 4,
-            "day": 11,
+            "day": 4,
             "hour": 17,
             "minute": 15,
             "delay": 30
@@ -96,13 +65,14 @@
         }
     },
     "football": {
-        "_comment": "During these months (Aug-Dec) on that day of the week (Sunday), update the football schedule. Also stored is the number of hours before a game that is considered pregame",
+        "_comment": "During these months (Aug-Jan) on that day of the week (Sunday), update the football schedule. Also stored is the number of hours before a game that is considered pregame",
         "updateMonths": [
             8,
             9,
             10,
             11,
-            12
+            12,
+            1
         ],
         "updateWeekday": 6,
         "pregameHours":  1
