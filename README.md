@@ -20,6 +20,10 @@ This bot automates tweets at the times the Georgia Tech whistle sounds, includin
 
 ## Task List: ##
 
+### Bugs ###
+
+* Football game ending past midnight has issues
+
 ### Confirmation Needed ###
 * Commencement
 
