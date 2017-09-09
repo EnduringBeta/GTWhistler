@@ -748,8 +748,8 @@ class Whistler:
                 
                 # If first check of a new day, run daily check
                 # Also ensure that a football game isn't current still going from earlier in the evening
-                if not self.reset and self.curDay is not self.dt.weekday() and
-                    (self.GAMEDAYPhase is GamedayPhase.notGameday or
+                if not self.reset and self.curDay is not self.dt.weekday() and \
+                    (self.GAMEDAYPhase is GamedayPhase.notGameday or \
                      self.GAMEDAYPhase is GamedayPhase.postGame):
                     if not self.dailyCheck(): # Check return value to see if should exit
                         return
