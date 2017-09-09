@@ -59,6 +59,10 @@ class Whistler:
         self.dailyCheck(True)
 
     def fullSetup(self, booting):
+        # Each day, set this Boolean true in case a previous day's special event goes awry
+        # If current day is a special event, this variable will be overwritten in other functions
+        self.tweetRegularSchedule = True;
+        
         setupSuccess = self.configSetup()
         setupSuccess = self.twitterSetup()  and setupSuccess
         setupSuccess = self.scheduleSetup() and setupSuccess
@@ -743,7 +747,10 @@ class Whistler:
                 self.dt = datetime.now(tz)
                 
                 # If first check of a new day, run daily check
-                if self.curDay is not self.dt.weekday() and not self.reset:
+                # Also ensure that a football game isn't current still going from earlier in the evening
+                if not self.reset and self.curDay is not self.dt.weekday() and
+                    (self.GAMEDAYPhase is GamedayPhase.notGameday or
+                     self.GAMEDAYPhase is GamedayPhase.postGame):
                     if not self.dailyCheck(): # Check return value to see if should exit
                         return
 
