@@ -22,6 +22,7 @@ This bot automates tweets at the times the Georgia Tech whistle sounds, includin
 
 ### Bugs ###
 * Football game ending past midnight has issues (to be confirmed fixed)
+* Not checking if game is cancelled before entering GAMEDAY mode
 
 ### Confirmation Needed ###
 * Commencement
