@@ -195,6 +195,8 @@ class Whistler:
                              self.wtwbTime[config_month],
                              self.wtwbTime[config_day]):
             self.wtwbToday = True
+        else:
+            self.wtwbToday = False
 
     def updateIfFootballScheduleUpdateDay(self):
         if self.dt.month in self.scheduleConfig[config_football][config_updateMonths] and \
