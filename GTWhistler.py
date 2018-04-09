@@ -590,20 +590,20 @@ class Whistler:
             logging.error("Failure when reading DMs: " + str(e))
             return []
 
-        latestID = Utils.readLatestDMID()
+        latestTimestamp = Utils.readLatestDMTimestamp()
 
-        # Set latest read DM ID to first in list
+        # Set latest read DM timestamp to first in list
         # (most recent) if not same as existing
-        # Only do this for future use. Old "latest"
-        # must still be used for this call.
-        if directMessages[0][DM_ID] != latestID:
-            Utils.storeLatestDMID(directMessages[0][DM_ID])
+        # Only do this for future use. Old "latest" must
+        # still be used for this call to know when to stop
+        if Utils.convertTimestampToDateTime(directMessages[0][DM_timestamp]) > latestTimestamp:
+            Utils.storeLatestDMTimestamp(directMessages[0][DM_timestamp])
 
         # Return only newer DMs than last read one
         # NOTE: Will miss DMs if more than 20 received since last check
         outputDMList = []
         for DM in directMessages:
-            if DM[DM_ID] == latestID:
+            if Utils.convertTimestampToDateTime(DM[DM_timestamp]) <= latestTimestamp:
                 return outputDMList
             else:
                 outputDMList.append(DM)
@@ -666,7 +666,9 @@ class Whistler:
             userID = self.APIConfig[config_ownerUserID]
 
         try:
-            self.t.direct_messages.new(user_id=userID, text=message)
+            if not debugDoNotDM:
+                self.t.direct_messages.new(user_id=userID, text=message)
+
             # If message isn't too long, log
             if len(message) < DM_maxLogChars:
                 logging.info("DM: " + message)

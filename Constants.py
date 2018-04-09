@@ -5,12 +5,13 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v2.1.15"
+versionNumber        = "v2.2.0"
 
 # Note: Use this Boolean for testing
 debugDoNotTweet      = False # While in development, this Boolean prevents the
                              # account from tweeting, instead printing on the
                              # machine to confirm proper output.
+debugDoNotDM         = False # Similar for direct messaging
 
 # Custom file for authentication data not to be shared publicly
 APIConfigFile        = "config.json"
@@ -191,7 +192,7 @@ gameday_toeHitLeather  = "(Sting 'em!) " + defaultWhistleText
 gameday_victory        = "(Victory!) "
 
 # Storage File constants
-Storage_LatestDMID  = "LatestDMID"
+Storage_LatestDMTimestamp  = "LatestDMTimestamp"
 
 # Direct Messaging (DM) constants
 DM_delay            = 1
@@ -199,6 +200,7 @@ DM_ID               = "id"
 DM_text             = "text"
 DM_senderID         = "sender_id"
 DM_senderScreenName = "sender_screen_name"
+DM_timestamp        = "created_at"
 
 # Direct Messaging (DM) commands
 DM_reset           = "reset"

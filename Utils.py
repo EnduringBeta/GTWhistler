@@ -3,6 +3,7 @@
 
 from Constants import *
 import json
+from datetime import datetime
 
 def logFileSetup():
     try:
@@ -37,27 +38,36 @@ def getLog(numLines=DM_defaultNumLines):
             # (Each log line has new line character already.)
             return ''.join(logText[-numLines:])
     except Exception as e:
-        logging.error("Failure to read from storage file: " + str(e))
+        logging.error("Failure to read from log file: " + str(e))
         return ""
 
-def storeLatestDMID(ID):
-    # Adjust input arg if not in proper form
-    if isinstance(ID, int):
-        ID = { Storage_LatestDMID: ID }
-    elif isinstance(ID, str):
-        ID = { Storage_LatestDMID: int(ID) }
+def convertTimestampToDateTime(timestampStr):
+    # Find if timestamp has timezone substring and
+    # remove if so, since "strptime" can't handle it.
+    # Examples: "+0000", "-0430" (always 5 characters plus a space)
+    indexPlus = timestampStr.find('+')
+    indexMinus = timestampStr.find('-')
+    if indexPlus >= 0:
+        timestampStr = timestampStr[:indexPlus] + timestampStr[indexPlus + 6:]
+    elif indexMinus >= 0:
+        timestampStr = timestampStr[:indexMinus] + timestampStr[indexMinus + 6:]
+    
+    return datetime.strptime(timestampStr, "%a %b %d %H:%M:%S %Y")
+
+def storeLatestDMTimestamp(timestamp):
+    timestamp = { Storage_LatestDMTimestamp: timestamp }
 
     try:
         with open(storageFile, 'w') as outFile:
-            json.dump(ID, outFile, indent=4)
+            json.dump(timestamp, outFile, indent=4)
     except Exception as e:
         logging.error("Failure to write storage file: " + str(e))
         return
 
-def readLatestDMID():
+def readLatestDMTimestamp():
     try:
         with open(storageFile, 'r') as inFile:
-            return json.load(inFile)[Storage_LatestDMID]
+            return convertTimestampToDateTime(json.load(inFile)[Storage_LatestDMTimestamp])
     except Exception as e:
         logging.error("Failure to read from storage file: " + str(e))
         return 0
