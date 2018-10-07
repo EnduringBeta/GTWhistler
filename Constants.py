@@ -25,7 +25,7 @@ storageFile          = "storage.json"
 logFile              = "GTW_log.txt"
 
 # Logging constants
-logLevel             = logging.DEBUG
+logLevel             = logging.INFO
 
 # Timezone/Formatting constants
 tz                   = timezone('US/Eastern')
