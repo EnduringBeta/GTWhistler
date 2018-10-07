@@ -7,7 +7,9 @@
 # - TwitterFollowBot: https://github.com/rhiever/TwitterFollowBot
 
 # For Twitter access
-from twitter import *
+from TwitterAPI import TwitterAPI
+# No longer supports DMs because of Twitter API change
+#from twitter import *
 
 # For configuration reading
 # (Thanks: http://stackoverflow.com/questions/2835559/parsing-values-from-a-json-file-in-python)
@@ -61,7 +63,7 @@ class Whistler:
     def fullSetup(self, booting):
         # Each day, set this Boolean true in case a previous day's special event goes awry
         # If current day is a special event, this variable will be overwritten in other functions
-        self.tweetRegularSchedule = True;
+        self.tweetRegularSchedule = True
         
         setupSuccess = self.configSetup()
         setupSuccess = self.twitterSetup()  and setupSuccess
@@ -85,11 +87,11 @@ class Whistler:
 
     def twitterSetup(self):
         try:
-            self.t = Twitter(auth=OAuth(
-                consumer_key    =   self.APIConfig[config_consumerKey],
-                consumer_secret =   self.APIConfig[config_consumerSecret],
-                token           =   self.APIConfig[config_accessToken],
-                token_secret    =   self.APIConfig[config_accessTokenSecret]))
+            self.t = TwitterAPI(
+                self.APIConfig[config_consumerKey],
+                self.APIConfig[config_consumerSecret],
+                self.APIConfig[config_accessToken],
+                self.APIConfig[config_accessTokenSecret])
         except Exception as e:
             errorStr = "Error when authenticating with Twitter: " + str(e)
             self.whistlerError(errorStr)
@@ -585,7 +587,12 @@ class Whistler:
         directMessages = None
 
         try:
-            directMessages = self.t.direct_messages()
+            # Gets last 30 days of DMs
+            r = self.t.request(APIgetDMsPath)
+            if r.status_code == 200:
+                directMessages = json.loads(r.text)[DM_events]
+            else:
+                logging.error("Could not connect to read DMs!")
         except Exception as e:
             logging.error("Failure when reading DMs: " + str(e))
             return []
@@ -596,32 +603,31 @@ class Whistler:
         # (most recent) if not same as existing
         # Only do this for future use. Old "latest" must
         # still be used for this call to know when to stop
-        if Utils.convertTimestampToDateTime(directMessages[0][DM_timestamp]) > latestTimestamp:
-            Utils.storeLatestDMTimestamp(directMessages[0][DM_timestamp])
+        if int(directMessages[0][DM_timestamp]) > latestTimestamp:
+            Utils.storeLatestDMTimestamp(int(directMessages[0][DM_timestamp]))
 
-        # Return only newer DMs than last read one
+        # Return only newer DMs than last read one that were sent to the bot
         # NOTE: Will miss DMs if more than 20 received since last check
         outputDMList = []
         for DM in directMessages:
-            if Utils.convertTimestampToDateTime(DM[DM_timestamp]) <= latestTimestamp:
+            if int(DM[DM_timestamp]) <= latestTimestamp:
                 return outputDMList
-            else:
+            elif int(DM[DM_messageCreate][DM_target][DM_recipientID]) == self.APIConfig[config_botUserID]:
                 outputDMList.append(DM)
-
-        logging.info("At least 20 new DMs received. Any beyond that since last check were missed.")
 
         return outputDMList
 
+    # TODO: Logging fails on emoji
     def interpretDM(self, DM):
-        msg = DM[DM_text]
+        msg = DM[DM_messageCreate][DM_messageData][DM_text]
         logging.info("Received DM: " + msg)
 
         # If owner sent "reset"
-        if DM_reset in msg.lower() and DM[DM_senderID] == self.APIConfig[config_ownerUserID]:
+        if DM_reset in msg.lower() and int(DM[DM_messageCreate][DM_senderID]) == self.APIConfig[config_ownerUserID]:
             self.sendDM("Resetting...")
             self.reset = True
         # If owner sent "log [num lines]"
-        elif DM_printLog in msg.lower() and DM[DM_senderID] == self.APIConfig[config_ownerUserID]:
+        elif DM_printLog in msg.lower() and int(DM[DM_messageCreate][DM_senderID]) == self.APIConfig[config_ownerUserID]:
             logging.info("Attempting to print log...")
             strArr = msg.lower().split()
             if strArr[0] == DM_printLog and len(strArr) == 2:
@@ -648,7 +654,7 @@ class Whistler:
                     for index in range(DM_maxTootLength):
                         msgDM += "o"
                 msgDM += "t!"
-                self.sendDM(msgDM, DM[DM_senderID])
+                self.sendDM(msgDM, int(DM[DM_messageCreate][DM_senderID]))
             else:
                 logging.info("...Heart of a lion, and the wings of a bat...")
                 logging.info("Ignoring tootable DM (Because It's Midnite!): " + msg)
@@ -667,7 +673,23 @@ class Whistler:
 
         try:
             if not debugDoNotDM:
-                self.t.direct_messages.new(user_id=userID, text=message)
+                payload = {
+                    DM_event: {
+                        DM_type: DM_messageCreate,
+                        DM_messageCreate: {
+                            DM_target: {
+                                DM_recipientID: str(userID)
+                            },
+                            DM_messageData: {
+                                DM_text: message
+                            }
+                        }
+                    }
+                }
+                r = self.t.request(APIpostDMPath, json.dumps(payload))
+
+                if r.status_code != 200:
+                    logging.error("Could not connect to send DM!")
 
             # If message isn't too long, log
             if len(message) < DM_maxLogChars:
@@ -698,7 +720,11 @@ class Whistler:
 
         # Otherwise, tweet!
         try:
-            self.t.statuses.update(status=text)
+            payload = {Tweet_status: text}
+            r = self.t.request(APIpostTweetPath, json.dumps(payload))
+
+            if r.status_code != 200:
+                logging.error("Could not connect to send tweet!")
         except Exception as e:
             errorStr = "Error when tweeting: " + text + " (" + str(e) + ")"
             self.whistlerError(errorStr)
@@ -732,9 +758,21 @@ class Whistler:
 
     def setPrevTweets(self):
         # Get previous tweets for later comparisons of time and text
-        self.prevTweets = self.t.statuses.user_timeline(
-            screen_name=self.APIConfig[config_botUsername],
-            count=numTweetsCompare)
+        try:
+            payload = {
+                Tweet_userID: self.APIConfig[config_botUserID],
+                Tweet_count: numTweetsCompare
+            }
+            r = self.t.request(APIgetTweetsPath, json.dumps(payload))
+
+            if r.status_code == 200:
+                self.prevTweets = json.loads(r.text)
+            else:
+                logging.error("Could not connect to get previous tweets!")
+
+        except Exception as e:
+            errorStr = "Error when getting previous tweets: (" + str(e) + ")"
+            self.whistlerError(errorStr)
 
     # ----------------------------
     # --- MAIN PROCESSING LOOP ---

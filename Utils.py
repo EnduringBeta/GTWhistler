@@ -67,7 +67,7 @@ def storeLatestDMTimestamp(timestamp):
 def readLatestDMTimestamp():
     try:
         with open(storageFile, 'r') as inFile:
-            return convertTimestampToDateTime(json.load(inFile)[Storage_LatestDMTimestamp])
+            return json.load(inFile)[Storage_LatestDMTimestamp]
     except Exception as e:
         logging.error("Failure to read from storage file: " + str(e))
         return 0

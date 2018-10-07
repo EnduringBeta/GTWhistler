@@ -5,7 +5,7 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v2.2.0"
+versionNumber        = "v2.3.0"
 
 # Note: Use this Boolean for testing
 debugDoNotTweet      = False # While in development, this Boolean prevents the
@@ -115,6 +115,7 @@ wtwb_inMemoriam  = "(In memoriam) "
 config_ownerUsername     = "owner_username"
 config_ownerUserID       = "owner_user_id"
 config_botUsername       = "bot_username"
+config_botUserID         = "bot_user_id"
 config_consumerKey       = "consumer_key"
 config_consumerSecret    = "consumer_secret"
 config_accessToken       = "access_token"
@@ -194,13 +195,31 @@ gameday_victory        = "(Victory!) "
 # Storage File constants
 Storage_LatestDMTimestamp  = "LatestDMTimestamp"
 
+# Twitter API constants
+APIpostTweetPath = "statuses/update"
+APIgetTweetsPath = "statuses/user_timeline"
+APIgetDMsPath = "direct_messages/events/list"
+APIpostDMPath = "direct_messages/events/new"
+
+# Tweeting constants
+Tweet_status        = "status"
+Tweet_userID        = "user_id"
+Tweet_count         = "count"
+
 # Direct Messaging (DM) constants
 DM_delay            = 1
-DM_ID               = "id"
-DM_text             = "text"
+DM_event            = "event"
+DM_events           = "events"
+#DM_ID               = "id"
+DM_type             = "type"
+DM_timestamp        = "created_timestamp"
+DM_messageCreate    = "message_create"
+DM_target           = "target"
+DM_recipientID      = "recipient_id"
 DM_senderID         = "sender_id"
-DM_senderScreenName = "sender_screen_name"
-DM_timestamp        = "created_at"
+DM_messageData      = "message_data"
+DM_text             = "text"
+#DM_entities         = "entities"
 
 # Direct Messaging (DM) commands
 DM_reset           = "reset"
