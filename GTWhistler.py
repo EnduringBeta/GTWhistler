@@ -689,7 +689,8 @@ class Whistler:
                         }
                     }
                 }
-                r = self.t.request(APIpostDMPath, payload)
+                # TODO: Why does this require json.dumps()?
+                r = self.t.request(APIpostDMPath, json.dumps(payload))
 
                 if r.status_code != 200:
                     self.whistlerError("Could not connect to send DM!")
@@ -707,6 +708,10 @@ class Whistler:
         # that method. Check if None and call if so.
         if self.prevTweets is None:
             self.setPrevTweets()
+
+        if self.prevTweets is None:
+            self.whistlerError("Not tweeting!")
+            return
 
         # Confirm it has been at least a small amount of time since the last tweet
         # Could be necessary if program started and stopped very quickly
@@ -777,6 +782,7 @@ class Whistler:
                     return
             else:
                 self.whistlerError("Could not connect to get previous tweets!")
+                return
 
         except Exception as e:
             errorStr = "Error when getting previous tweets: (" + str(e) + ")"
