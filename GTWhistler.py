@@ -584,17 +584,20 @@ class Whistler:
             sleep(DM_delay)
 
     def getNewDMs(self):
-        directMessages = None
+        directMessages = []
 
         try:
             # Gets last 30 days of DMs
             r = self.t.request(APIgetDMsPath)
             if r.status_code == 200:
                 directMessages = json.loads(r.text)[DM_events]
+                if len(directMessages) == 0:
+                    return []
             else:
-                logging.error("Could not connect to read DMs!")
+                self.whistlerError("Could not connect to read DMs!")
+                return []
         except Exception as e:
-            logging.error("Failure when reading DMs: " + str(e))
+            self.whistlerError("Failure when reading DMs: " + str(e))
             return []
 
         latestTimestamp = Utils.readLatestDMTimestamp()
@@ -634,7 +637,7 @@ class Whistler:
                 try:
                     numLines = int(strArr[1])
                 except Exception as e:
-                    logging.error("Failure to convert number of lines argument: " + str(e))
+                    logging.warning("Failure to convert number of lines argument: " + str(e))
                     self.sendDM("Print log command format: 'log [num lines]'")
                     numLines = DM_defaultNumLines
                 self.sendDM(Utils.getLog(numLines))
@@ -689,7 +692,7 @@ class Whistler:
                 r = self.t.request(APIpostDMPath, json.dumps(payload))
 
                 if r.status_code != 200:
-                    logging.error("Could not connect to send DM!")
+                    self.whistlerError("Could not connect to send DM!")
 
             # If message isn't too long, log
             if len(message) < DM_maxLogChars:
@@ -697,7 +700,7 @@ class Whistler:
             else:
                 logging.info("DM long message")
         except Exception as e:
-            logging.error("Failure when DMing: " + str(e))
+            self.whistlerError("Failure when DMing: " + str(e))
 
     def whistleTweet(self, text):
         # Done in createValidRandomWhistleText, but not every whistle calls
@@ -724,7 +727,7 @@ class Whistler:
             r = self.t.request(APIpostTweetPath, json.dumps(payload))
 
             if r.status_code != 200:
-                logging.error("Could not connect to send tweet!")
+                self.whistlerError("Could not connect to send tweet!")
         except Exception as e:
             errorStr = "Error when tweeting: " + text + " (" + str(e) + ")"
             self.whistlerError(errorStr)
@@ -766,9 +769,14 @@ class Whistler:
             r = self.t.request(APIgetTweetsPath, json.dumps(payload))
 
             if r.status_code == 200:
-                self.prevTweets = json.loads(r.text)
+                pT = json.loads(r.text)
+                if len(pT) > 0:
+                    self.prevTweets = json.loads(r.text)
+                else:
+                    self.whistlerError("Did not retrieve previous tweets!")
+                    return
             else:
-                logging.error("Could not connect to get previous tweets!")
+                self.whistlerError("Could not connect to get previous tweets!")
 
         except Exception as e:
             errorStr = "Error when getting previous tweets: (" + str(e) + ")"
