@@ -689,7 +689,7 @@ class Whistler:
                         }
                     }
                 }
-                r = self.t.request(APIpostDMPath, json.dumps(payload))
+                r = self.t.request(APIpostDMPath, payload)
 
                 if r.status_code != 200:
                     self.whistlerError("Could not connect to send DM!")
@@ -724,7 +724,7 @@ class Whistler:
         # Otherwise, tweet!
         try:
             payload = {Tweet_status: text}
-            r = self.t.request(APIpostTweetPath, json.dumps(payload))
+            r = self.t.request(APIpostTweetPath, payload)
 
             if r.status_code != 200:
                 self.whistlerError("Could not connect to send tweet!")
@@ -766,7 +766,7 @@ class Whistler:
                 Tweet_userID: self.APIConfig[config_botUserID],
                 Tweet_count: numTweetsCompare
             }
-            r = self.t.request(APIgetTweetsPath, json.dumps(payload))
+            r = self.t.request(APIgetTweetsPath, payload)
 
             if r.status_code == 200:
                 pT = json.loads(r.text)
