@@ -4,7 +4,7 @@ In order to make the program start automatically upon boot of the Pi, a service 
 
 I was convinced of this solution by the following link: http://raspberrypi.stackexchange.com/questions/28199/raspberry-pi-starting-programs-automatically-on-startup
 
-The link shares how to appropriately create a service directory and write a script to execute. The script used for this project is "run" and is also found in this folder.
+The link shares how to appropriately create a service directory and write a script to execute. The script used for this project is "run" and is also found in this folder. Useful commands are "svc [-u/d] /etc/service/GTWhistler_Service/".
 
 ---
 
