@@ -554,7 +554,7 @@ class Whistler:
 
     def isWhistleDMTextValid(self, text):
         if len(text) > twitterDMCharLimit:
-            logging.warning("Warning: attempted to DM something too long: " + text)
+            logging.warning("Warning: attempted to DM something too long: " + "...but obviously I wouldn't print that text to the log to make sure log future reads aren't also too long. Hah. That would be so silly.")
             return False
         else:
             return True
