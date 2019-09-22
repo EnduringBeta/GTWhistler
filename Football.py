@@ -44,18 +44,22 @@ def updateFootballSchedule(year, team):
     fullSchedule = readFootballAPI(APIscorespath, APIschedule + year)
     scheduleGT = []
 
-    for game in fullSchedule:
-        if  game[APIfield_AwayTeam] == team or \
-            game[APIfield_HomeTeam] == team:
-            newGame = {
-                APIfield_GameID:       game[APIfield_GameID],
-                APIfield_DateTime:     game[APIfield_DateTime],
-                APIfield_AwayTeam:     game[APIfield_AwayTeam],
-                APIfield_HomeTeam:     game[APIfield_HomeTeam],
-                APIfield_AwayTeamName: game[APIfield_AwayTeamName],
-                APIfield_HomeTeamName: game[APIfield_HomeTeamName]
-            }
-            scheduleGT.append(newGame)
+    try:
+        for game in fullSchedule:
+            if  game[APIfield_AwayTeam] == team or \
+                game[APIfield_HomeTeam] == team:
+                newGame = {
+                    APIfield_GameID:       game[APIfield_GameID],
+                    APIfield_DateTime:     game[APIfield_DateTime],
+                    APIfield_AwayTeam:     game[APIfield_AwayTeam],
+                    APIfield_HomeTeam:     game[APIfield_HomeTeam],
+                    APIfield_AwayTeamName: game[APIfield_AwayTeamName],
+                    APIfield_HomeTeamName: game[APIfield_HomeTeamName]
+                }
+                scheduleGT.append(newGame)
+    except Exception as e:
+        logging.error("Failure to parse football schedule from FantasyData: " + str(e))
+        return None
 
     # Write schedule to log and to file for later use
     logging.info("Got football schedule")
