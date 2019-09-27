@@ -705,7 +705,8 @@ class Whistler:
                 r = self.t.request(APIpostDMPath, json.dumps(payload))
 
                 if r.status_code != 200:
-                    self.whistlerError("Could not connect to send DM!")
+                    # Don't try to send another DM when it just failed
+                    logging.error("Could not connect to send DM: " + r.text)
 
             # If message isn't too long, log
             if len(message) < DM_maxLogChars:
@@ -713,7 +714,8 @@ class Whistler:
             else:
                 logging.info("DM long message")
         except Exception as e:
-            self.whistlerError("Failure when DMing: " + str(e))
+            # Don't try to send another DM when it just failed
+            logging.error("Failure when DMing: " + str(e))
 
     def whistleTweet(self, text):
         # Done in createValidRandomWhistleText, but not every whistle calls
