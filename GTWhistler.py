@@ -48,6 +48,7 @@ class Whistler:
     wtwbToday            = False
     wtwbTime             = None
 
+    footballConnected    = False
     GAMEDAYInfo          = None
     gameState            = None
     GAMEDAYPhase         = GamedayPhase.notGameday
@@ -69,8 +70,10 @@ class Whistler:
         setupSuccess = self.twitterSetup()  and setupSuccess
         setupSuccess = self.scheduleSetup() and setupSuccess
         setupSuccess = self.logSetup()      and setupSuccess
+
+        # This part of setup should not break the program if it fails
         if booting:
-            setupSuccess = self.footballSetup() and setupSuccess
+            self.footballConnected = self.footballSetup()
 
         return setupSuccess
 
@@ -123,7 +126,9 @@ class Whistler:
         Football.updateHeaders(self.APIConfig[config_fantasyDataKey])
         if Football.updateFootballSchedule(self.dt.year, APIdata_GTTeam) is not None:
             return True
-        return False
+        else:
+            self.whistlerError("Failed to setup football feature!")
+            return False
 
     # ------------------------------
     # --- ERROR HANDLING METHODS ---
@@ -132,6 +137,9 @@ class Whistler:
     def whistlerError(self, text):
         logging.error(text)
         self.directMessageOnError(text)
+        # Show logs from the error
+        self.directMessageOnError(Utils.getLog(DM_defaultNumLines))
+        self.directMessageOnError("Sleeping for a while before continuing...")
         sleep(errorDelay * secPerMin) # Do nothing for a while to prevent spammy worst-case scenarios
 
     def directMessageOnError(self, errorText):
@@ -164,15 +172,19 @@ class Whistler:
 
         self.checkIfWTWBDay()
 
-        self.updateIfFootballScheduleUpdateDay()
-
-        self.getInfoIfGAMEDAY()
+        if self.footballConnected:
+            self.updateIfFootballScheduleUpdateDay()
+            self.getInfoIfGAMEDAY()
 
         logging.info("Ran daily check:")
         logging.info(" - Current Day: " + str(self.curDay))
         logging.info(" - WTWB Day: " + str(self.wtwbToday))
-        logging.info(" - GAMEDAY: " + str(True if self.GAMEDAYPhase \
-                                                  is not GamedayPhase.notGameday else False))
+
+        if self.footballConnected:
+            logging.info(" - GAMEDAY: " + str(True if self.GAMEDAYPhase \
+                                                      is not GamedayPhase.notGameday else False))
+        else:
+            logging.info(" - GAMEDAY: Disconnected")
 
         return True
 
@@ -803,9 +815,9 @@ class Whistler:
                 self.dt = datetime.now(tz)
                 
                 # If first check of a new day, run daily check
-                # Also ensure that a football game isn't current still going from earlier in the evening
+                # Also ensure that a football game isn't currently still going from earlier in the evening
                 if not self.reset and self.curDay is not self.dt.weekday() and \
-                    (self.GAMEDAYPhase is GamedayPhase.notGameday or \
+                    (self.GAMEDAYPhase is GamedayPhase.notGameday or
                      self.GAMEDAYPhase is GamedayPhase.postGame):
                     if not self.dailyCheck(): # Check return value to see if should exit
                         return
@@ -820,7 +832,7 @@ class Whistler:
                         self.wtwbProcessing()
                         continue # Skip remaining processing
                     # If football game today
-                    elif self.GAMEDAYPhase is not GamedayPhase.notGameday:
+                    elif self.GAMEDAYPhase is not GamedayPhase.notGameday and self.footballConnected:
                         self.gamedayProcessing()
 
                 # Under some conditions (GAMEDAY), any regularly-scheduled tweets will be ignored

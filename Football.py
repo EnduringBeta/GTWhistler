@@ -42,6 +42,12 @@ def updateFootballSchedule(year, team):
         year = str(year)
 
     fullSchedule = readFootballAPI(APIscorespath, APIschedule + year)
+
+    # TODO: Confirm when API works again that it sends 200! It should!
+    if fullSchedule["statusCode"] != 200:
+        logging.error("Failure to obtain football schedule from FantasyData: " + str(fullSchedule["message"]))
+        return None
+
     scheduleGT = []
 
     try:

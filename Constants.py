@@ -5,7 +5,7 @@ from pytz import timezone
 from enum import Enum
 
 # Project constants
-versionNumber        = "v2.3.3"
+versionNumber        = "v2.4.0"
 
 # Note: Use this Boolean for testing
 debugDoNotTweet      = False # While in development, this Boolean prevents the
@@ -94,7 +94,7 @@ minTweetTimeDelta    = 1  # minutes
 # This number is very important/delicate!
 # Setting this rate lower will likely cause this program to
 # exceed its maximum allotted number of API calls per month
-scoreSamplingPeriod  = 2 # minutes
+scoreSamplingPeriod  = 5 # minutes
 
 # Escape hatch value for if offline and will never receive data
 # indicating the game is over
