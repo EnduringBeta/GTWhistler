@@ -25,7 +25,7 @@ The `gtwhistler.service` file holds the needed information for creating this ser
 
 Maintenance tips:
 
-* `journalctl -u gtwhistler` can show how the service was recently run
+* `journalctl -u gtwhistler` can show how the service was recently run.
 * Use `tail -f /home/pi/Projects/GTWhistler/GTW_log.txt` to show recent logs from the program. Use `nano` or `vi` on the file to look through it.
 
 ---
