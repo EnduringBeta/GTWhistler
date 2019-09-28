@@ -11,7 +11,7 @@ This bot automates tweets at the times the Georgia Tech whistle sounds, includin
 ## Notes: ##
 
 * "Images" holds the original images and modified ones for use in the account as well as a document linking to their sources.
-* "Automation" holds the script that is run as a service on the Raspberry Pi as well as instructions explaining how it works.
+* "Deploy" holds instructions to run the program as a service on the Raspberry Pi as well as information explaining how it works.
 * "ExampleData" holds JSON files that contain useful information required for the bot to run. Sensitive data is removed. (Normally these are to be in the same directory as the Python code.)
  * "exampleConfig.json" is largely empty but is filled out on the Raspberry Pi for security reasons.
  * "exampleFootball.json" shows how data is saved for a mid-season 2016 football schedule

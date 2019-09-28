@@ -1,0 +1,21 @@
+[Unit]
+Description=Twitter bot simulating the Georgia Tech Whistle
+# Run after network is online
+After=network-online.target
+
+[Service]
+Type=simple
+# Start in project directory for actions
+WorkingDirectory=/home/pi/Projects/GTWhistler/
+# Check for code updates from GitHub
+ExecStartPre=/usr/bin/git pull
+# Run the GTWhistler program
+ExecStart=/usr/bin/python3 GTWhistler.py
+# Always restart the program if it fails, waiting 10 seconds
+Restart=always
+RestartSec=10s
+KillMode=process
+TimeoutSec=infinity
+
+[Install]
+WantedBy=multi-user.target
