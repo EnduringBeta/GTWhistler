@@ -17,6 +17,7 @@ import json
 from datetime import datetime
 from time import sleep
 from random import randint
+from random import random
 from sys import stdout
 
 from Constants import *
@@ -512,6 +513,10 @@ class Whistler:
         for index in range(numLowOs):
             text += "o"
         text += "w"
+        
+        # Stand up for what you believe in
+        if random() > 0.9:
+            text += " (#BlackLivesMatter)"
 
         return text
 
