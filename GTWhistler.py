@@ -515,8 +515,11 @@ class Whistler:
         text += "w"
         
         # Stand up for what you believe in
-        if random() > 0.9:
+        cause = random()
+        if cause > 0.9:
             text += " (#BlackLivesMatter)"
+        elif cause < 0.1:
+            text += " (#StayHome)"
 
         return text
 
