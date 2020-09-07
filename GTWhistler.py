@@ -73,8 +73,10 @@ class Whistler:
         setupSuccess = self.logSetup()      and setupSuccess
 
         # This part of setup should not break the program if it fails
-        if booting:
-            self.footballConnected = self.footballSetup()
+        # Note: removed this because constantly failing; maybe API changed, maybe COVID-19 scheduling
+        # if booting:
+        #     self.footballConnected = self.footballSetup()
+        self.footballConnected = False
 
         return setupSuccess
 
