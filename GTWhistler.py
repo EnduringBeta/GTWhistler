@@ -520,6 +520,8 @@ class Whistler:
         cause = random()
         if cause > 0.95:
             text += " (#BlackLivesMatter)"
+        elif cause > 0.9:
+            text += " (#StopAsianHate)"
         elif cause < 0.1:
             text += " (#WearAMask)"
 
