@@ -523,7 +523,7 @@ class Whistler:
         elif cause > 0.9:
             text += " (#StopAsianHate)"
         elif cause < 0.1:
-            text += " (#WearAMask)"
+            text += " (#GetVaccinated)"
 
         return text
 
